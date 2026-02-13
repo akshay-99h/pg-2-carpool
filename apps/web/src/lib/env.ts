@@ -1,9 +1,18 @@
 const required = ['DATABASE_URL', 'AUTH_SECRET'] as const;
+const isProduction = process.env.NODE_ENV === 'production';
 
 for (const key of required) {
   if (!process.env[key]) {
     console.warn(`Missing environment variable: ${key}`);
   }
+}
+
+if (isProduction && !process.env.RESEND_API_KEY) {
+  console.warn('Missing environment variable: RESEND_API_KEY');
+}
+
+if (isProduction && (!process.env.EMAIL_FROM || /example\.com/i.test(process.env.EMAIL_FROM))) {
+  console.warn('EMAIL_FROM should be set to a verified sending identity in production.');
 }
 
 export const env = {

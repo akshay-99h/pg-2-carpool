@@ -5,6 +5,8 @@ import { createOtp, sendOtpEmail } from '@/lib/auth/otp';
 import { db } from '@/lib/db';
 
 export async function POST(request: Request) {
+  let tokenId: string | null = null;
+
   try {
     const body = await request.json();
     const parsed = emailOtpRequestSchema.safeParse(body);
@@ -29,12 +31,43 @@ export async function POST(request: Request) {
       );
     }
 
-    const otp = await createOtp(parsed.data.email);
-    await sendOtpEmail(parsed.data.email, otp);
+    const created = await createOtp(parsed.data.email);
+    tokenId = created.tokenId;
+    const delivery = await sendOtpEmail(parsed.data.email, created.otp);
+    console.info('otp delivery queued', {
+      email: parsed.data.email.toLowerCase(),
+      provider: delivery.provider,
+      messageId: 'id' in delivery ? delivery.id : null,
+      tokenId,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (tokenId) {
+      await db.otpToken.delete({ where: { id: tokenId } }).catch(() => undefined);
+    }
+
     console.error(error);
+
+    if (error instanceof Error) {
+      if (
+        error.message === 'OTP_EMAIL_PROVIDER_NOT_CONFIGURED' ||
+        error.message === 'OTP_EMAIL_FROM_NOT_CONFIGURED'
+      ) {
+        return NextResponse.json(
+          { error: 'Email delivery is not configured. Please contact support.' },
+          { status: 500 }
+        );
+      }
+
+      if (error.message === 'OTP_EMAIL_SEND_FAILED') {
+        return NextResponse.json(
+          { error: 'Unable to deliver OTP email right now. Please retry in a moment.' },
+          { status: 502 }
+        );
+      }
+    }
+
     return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
   }
 }

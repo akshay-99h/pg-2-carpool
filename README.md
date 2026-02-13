@@ -94,5 +94,6 @@ Mobile-first carpool platform for Panchsheel Greens 2 with:
 
 ## Notes
 - First admin can be bootstrapped via `ADMIN_BOOTSTRAP_EMAILS`.
-- If `RESEND_API_KEY` is empty, OTP is logged to server console (dev fallback).
+- If `RESEND_API_KEY` is empty, OTP is logged to server console only in development.
+- In production, OTP send fails fast when `RESEND_API_KEY` is missing or `EMAIL_FROM` is still a placeholder (e.g. `example.com`).
 - Expo app is scaffolded for parity expansion in next phase.
