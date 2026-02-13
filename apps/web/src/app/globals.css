@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-poppins: "Avenir Next", "SF Pro Text", "Segoe UI", "Trebuchet MS", sans-serif;
+  --font-merriweather: "Avenir Next", "SF Pro Text", "Segoe UI", "Trebuchet MS", sans-serif;
+  --background: 42 30% 97%;
+  --foreground: 154 16% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 154 16% 14%;
+  --primary: 146 58% 30%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 349 30% 32%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 40 24% 93%;
+  --accent-foreground: 154 16% 14%;
+  --muted: 41 20% 95%;
+  --muted-foreground: 154 8% 39%;
+  --border: 43 14% 84%;
+  --input: 43 14% 84%;
+  --ring: 146 58% 30%;
+  --destructive: 354 72% 52%;
+  --destructive-foreground: 0 0% 100%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: radial-gradient(115% 75% at 0% -10%, hsl(var(--primary) / 0.16) 0%, transparent 48%),
+    radial-gradient(95% 68% at 100% -20%, hsl(var(--secondary) / 0.14) 0%, transparent 44%),
+    linear-gradient(180deg, hsl(var(--background)) 0%, hsl(36 48% 94%) 100%);
+  font-family: var(--font-poppins), sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-merriweather), sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .app-surface {
+    border-bottom: 1px solid hsl(var(--border));
+    background: transparent;
+  }
+
+  .brand-dot {
+    height: 0.55rem;
+    width: 0.55rem;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+  }
+
+  .status-pill {
+    border: 1px solid hsl(var(--border));
+    background: transparent;
+  }
+
+  .acet-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(
+      132deg,
+      hsl(var(--primary) / 0.35),
+      hsl(var(--border) / 0.95),
+      hsl(var(--secondary) / 0.25)
+    );
+  }
+
+  .acet-card::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: -42%;
+    background: radial-gradient(circle at center, hsl(var(--primary) / 0.2), transparent 58%);
+    animation: acet-aurora 10s ease-in-out infinite;
+    opacity: 0.8;
+  }
+
+  .acet-card-inner {
+    position: relative;
+    border-radius: calc(1rem - 1px);
+    background: rgba(255, 255, 255, 0.84);
+    backdrop-filter: blur(12px);
+  }
+
+  .acet-grid {
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.32) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.32) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  .hero-dot-pattern {
+    background-image: radial-gradient(hsl(var(--primary) / 0.2) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+}
+
+@keyframes acet-aurora {
+  0% {
+    transform: translate(-8%, -2%);
+  }
+  50% {
+    transform: translate(10%, 6%);
+  }
+  100% {
+    transform: translate(-8%, -2%);
+  }
+}

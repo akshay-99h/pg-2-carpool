@@ -1,0 +1,12 @@
+{
+  "name": "@carpool/config",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "files": ["biome", "tsconfig"],
+  "scripts": {
+    "build": "echo \"no build for config package\"",
+    "lint": "echo \"no lint for config package\"",
+    "typecheck": "echo \"no typecheck for config package\""
+  }
+}

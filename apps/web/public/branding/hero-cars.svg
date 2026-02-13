@@ -1,0 +1,75 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1200" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D6F8D9"/>
+      <stop offset="0.45" stop-color="#E9FFF1"/>
+      <stop offset="1" stop-color="#FFF4D9"/>
+    </linearGradient>
+    <linearGradient id="road" x1="430" y1="190" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4A5568"/>
+      <stop offset="1" stop-color="#1F2937"/>
+    </linearGradient>
+    <linearGradient id="carGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#26A65B"/>
+      <stop offset="1" stop-color="#168F4A"/>
+    </linearGradient>
+    <linearGradient id="carCoral" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FF7E5F"/>
+      <stop offset="1" stop-color="#FF5C3D"/>
+    </linearGradient>
+    <linearGradient id="carBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#45A7FF"/>
+      <stop offset="1" stop-color="#2C82E3"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="760" rx="36" fill="url(#sky)"/>
+
+  <ellipse cx="980" cy="110" rx="90" ry="90" fill="#FFE7A8" opacity="0.9"/>
+  <ellipse cx="210" cy="80" rx="120" ry="70" fill="#C8F2D0"/>
+  <ellipse cx="880" cy="710" rx="260" ry="70" fill="#C5EFD1"/>
+
+  <path d="M540 170C604 298 728 458 786 760H404C456 462 494 296 540 170Z" fill="url(#road)"/>
+  <path d="M540 170C604 298 728 458 786 760H404C456 462 494 296 540 170Z" stroke="#0F172A" stroke-opacity="0.18"/>
+
+  <path d="M538 224L566 300M568 318L615 450M620 466L683 640" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  <path d="M510 304L460 434M450 452L386 640" stroke="white" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+
+  <g transform="translate(464,330)">
+    <rect x="0" y="26" width="138" height="42" rx="14" fill="url(#carGreen)"/>
+    <rect x="22" y="0" width="80" height="30" rx="11" fill="#1E8C4F"/>
+    <rect x="28" y="5" width="32" height="18" rx="4" fill="#D7F3FF"/>
+    <rect x="65" y="5" width="30" height="18" rx="4" fill="#D7F3FF"/>
+    <circle cx="30" cy="70" r="12" fill="#111827"/>
+    <circle cx="108" cy="70" r="12" fill="#111827"/>
+    <circle cx="30" cy="70" r="4" fill="#94A3B8"/>
+    <circle cx="108" cy="70" r="4" fill="#94A3B8"/>
+  </g>
+
+  <g transform="translate(620,468) scale(1.05)">
+    <rect x="0" y="26" width="138" height="42" rx="14" fill="url(#carCoral)"/>
+    <rect x="22" y="0" width="80" height="30" rx="11" fill="#F95D3B"/>
+    <rect x="28" y="5" width="32" height="18" rx="4" fill="#E7F6FF"/>
+    <rect x="65" y="5" width="30" height="18" rx="4" fill="#E7F6FF"/>
+    <circle cx="30" cy="70" r="12" fill="#111827"/>
+    <circle cx="108" cy="70" r="12" fill="#111827"/>
+    <circle cx="30" cy="70" r="4" fill="#94A3B8"/>
+    <circle cx="108" cy="70" r="4" fill="#94A3B8"/>
+  </g>
+
+  <g transform="translate(740,246) scale(0.95)">
+    <rect x="0" y="26" width="138" height="42" rx="14" fill="url(#carBlue)"/>
+    <rect x="22" y="0" width="80" height="30" rx="11" fill="#2D87EA"/>
+    <rect x="28" y="5" width="32" height="18" rx="4" fill="#E3F4FF"/>
+    <rect x="65" y="5" width="30" height="18" rx="4" fill="#E3F4FF"/>
+    <circle cx="30" cy="70" r="12" fill="#111827"/>
+    <circle cx="108" cy="70" r="12" fill="#111827"/>
+    <circle cx="30" cy="70" r="4" fill="#94A3B8"/>
+    <circle cx="108" cy="70" r="4" fill="#94A3B8"/>
+  </g>
+
+  <g opacity="0.8">
+    <path d="M100 620C220 570 350 560 460 610" stroke="#7BC891" stroke-width="10" stroke-linecap="round"/>
+    <path d="M810 620C920 575 1040 570 1140 618" stroke="#7BC891" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>

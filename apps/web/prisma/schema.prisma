@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CommuteRole {
+  VEHICLE_OWNER
+  PASSENGER
+  BOTH
+}
+
+enum TripType {
+  DAILY
+  ONE_TIME
+}
+
+enum TripStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum TripRequestStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum ContactStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String?        @unique
+  googleSub      String?        @unique
+  role           UserRole       @default(USER)
+  approvalStatus ApprovalStatus @default(PENDING)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  profile        Profile?
+  trips          Trip[]         @relation("DriverTrips")
+  tripRequests   TripRequest[]
+  poolRequests   PoolRequest[]
+  contactQueries ContactQuery[]
+  adminInvites   AdminInvite[]  @relation("CreatedByAdmin")
+  auditLogs      AuditLog[]     @relation("ActorAuditLogs")
+}
+
+model Profile {
+  id            String      @id @default(uuid())
+  userId        String      @unique
+  name          String
+  towerFlat     String
+  commuteRole   CommuteRole
+  vehicleNumber String?
+  mobileNumber  String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OtpToken {
+  id          String    @id @default(uuid())
+  email       String
+  otpHash     String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
+model Trip {
+  id             String      @id @default(uuid())
+  driverId       String
+  tripType       TripType
+  fromLocation   String
+  route          String
+  toLocation     String
+  departAt       DateTime
+  seatsAvailable Int
+  seatsBooked    Int         @default(0)
+  notes          String?
+  expiresAt      DateTime?
+  status         TripStatus  @default(ACTIVE)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  driver   User          @relation("DriverTrips", fields: [driverId], references: [id], onDelete: Cascade)
+  requests TripRequest[]
+
+  @@index([tripType, departAt])
+  @@index([expiresAt])
+}
+
+model TripRequest {
+  id        String            @id @default(uuid())
+  tripId    String
+  riderId   String
+  note      String?
+  status    TripRequestStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  trip  Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  rider User @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, riderId])
+  @@index([riderId, status])
+}
+
+model PoolRequest {
+  id           String   @id @default(uuid())
+  userId        String
+  fromLocation  String
+  toLocation    String
+  route         String?
+  travelAt      DateTime
+  seatsNeeded   Int
+  status        String   @default("OPEN")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([travelAt, status])
+}
+
+model ChargeItem {
+  id        String   @id @default(uuid())
+  routeName String
+  amount    Int
+  notes     String?
+  active    Boolean  @default(true)
+  orderNo   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TermsDocument {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  active      Boolean  @default(true)
+  version     String   @default("1.0")
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactQuery {
+  id         String        @id @default(uuid())
+  userId     String?
+  name       String
+  mobile     String
+  message    String
+  status     ContactStatus @default(OPEN)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+model AdminInvite {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  createdById String
+  createdAt   DateTime @default(now())
+
+  createdBy User @relation("CreatedByAdmin", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([action, createdAt])
+}
