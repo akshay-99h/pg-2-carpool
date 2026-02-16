@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 import { AppLogo } from '@/components/layout/app-logo';
 import { MobileShell } from '@/components/layout/mobile-shell';
+import { PwaLandingOverlay } from '@/components/pwa/pwa-landing-overlay';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollLink } from '@/components/ui/scroll-link';
@@ -203,168 +204,175 @@ function HeroShowcase() {
 
 export default function LandingPage() {
   return (
-    <MobileShell withBottomInset={false} className="pt-2 md:pt-4">
-      <section className="relative isolate overflow-hidden rounded-[2.4rem] border border-primary/20 bg-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_8%,rgba(10,185,198,0.22),transparent_32%),radial-gradient(circle_at_94%_6%,rgba(16,185,129,0.18),transparent_34%),radial-gradient(circle_at_70%_84%,rgba(122,30,43,0.1),transparent_44%)]" />
-        <div className="pointer-events-none absolute left-0 top-0 h-[54%] w-full bg-[linear-gradient(120deg,rgba(9,172,188,0.85)_0%,rgba(27,189,154,0.62)_38%,rgba(255,255,255,0.22)_38%,rgba(255,255,255,0.03)_100%)] lg:w-[65%]" />
+    <>
+      <PwaLandingOverlay />
+      <MobileShell withBottomInset={false} className="pt-2 md:pt-4">
+        <section className="relative isolate overflow-hidden rounded-[2.4rem] border border-primary/20 bg-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_8%,rgba(10,185,198,0.22),transparent_32%),radial-gradient(circle_at_94%_6%,rgba(16,185,129,0.18),transparent_34%),radial-gradient(circle_at_70%_84%,rgba(122,30,43,0.1),transparent_44%)]" />
+          <div className="pointer-events-none absolute left-0 top-0 h-[54%] w-full bg-[linear-gradient(120deg,rgba(9,172,188,0.85)_0%,rgba(27,189,154,0.62)_38%,rgba(255,255,255,0.22)_38%,rgba(255,255,255,0.03)_100%)] lg:w-[65%]" />
 
-        <div className="relative grid gap-10 px-5 py-8 md:px-8 md:py-10 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
-          <div className="space-y-6">
-            <AppLogo />
+          <div className="relative grid gap-10 px-5 py-8 md:px-8 md:py-10 xl:grid-cols-[0.9fr_1.1fr] xl:items-center">
+            <div className="space-y-6">
+              <AppLogo />
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-primary/35 bg-white/90 px-2.5 py-1 text-[0.68rem] text-primary">
-                Car Pool Pilot | Panchsheel Greens 2
-              </Badge>
-              <span className="rounded-full border border-primary/20 bg-white/85 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Residents Only
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border-primary/35 bg-white/90 px-2.5 py-1 text-[0.68rem] text-primary">
+                  Car Pool Pilot | Panchsheel Greens 2
+                </Badge>
+                <span className="rounded-full border border-primary/20 bg-white/85 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  Residents Only
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <h1 className="max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-foreground md:text-[3.85rem]">
+                  Car Pool, designed for everyday PG2 commuting.
+                </h1>
+                <p className="max-w-[58ch] text-sm text-muted-foreground md:text-base">
+                  Post daily and one-time Car Pool rides, request seats instantly, and reduce
+                  commute cost without WhatsApp clutter.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button asChild className="bg-primary hover:bg-primary/90">
+                  <Link href="/login">
+                    Start Car Pool Login
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-primary/30 bg-white/85">
+                  <ScrollLink targetId="how-it-works">How Car Pool Works</ScrollLink>
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-xs font-medium text-foreground">
+                <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
+                  Daily + One-time rides
+                </span>
+                <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
+                  Admin-approved residents
+                </span>
+                <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
+                  PWA install support
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <h1 className="max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-foreground md:text-[3.85rem]">
-                Car Pool, designed for everyday PG2 commuting.
-              </h1>
-              <p className="max-w-[58ch] text-sm text-muted-foreground md:text-base">
-                Post daily and one-time Car Pool rides, request seats instantly, and reduce commute
-                cost without WhatsApp clutter.
+            <HeroShowcase />
+          </div>
+        </section>
+
+        <section
+          id="how-it-works"
+          className="rounded-[2rem] border border-border/80 bg-white px-5 py-6 md:px-8 md:py-8"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                How Car Pool Works
               </p>
+              <h2 className="mt-2 max-w-[22ch] text-2xl font-semibold leading-tight md:text-3xl">
+                Three steps to start Car Pool in Panchsheel Greens 2
+              </h2>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button asChild className="bg-primary hover:bg-primary/90">
-                <Link href="/login">
-                  Start Car Pool Login
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="border-primary/30 bg-white/85">
-                <ScrollLink targetId="how-it-works">How Car Pool Works</ScrollLink>
-              </Button>
-            </div>
-
-            <div className="flex flex-wrap gap-2 text-xs font-medium text-foreground">
-              <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
-                Daily + One-time rides
-              </span>
-              <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
-                Admin-approved residents
-              </span>
-              <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
-                PWA install support
-              </span>
-            </div>
-          </div>
-
-          <HeroShowcase />
-        </div>
-      </section>
-
-      <section
-        id="how-it-works"
-        className="rounded-[2rem] border border-border/80 bg-white px-5 py-6 md:px-8 md:py-8"
-      >
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              How Car Pool Works
-            </p>
-            <h2 className="mt-2 max-w-[22ch] text-2xl font-semibold leading-tight md:text-3xl">
-              Three steps to start Car Pool in Panchsheel Greens 2
-            </h2>
-          </div>
-          <Button asChild variant="outline" className="border-primary/30">
-            <Link href="/login">Join Pilot Access</Link>
-          </Button>
-        </div>
-
-        <ol className="mt-7 grid gap-6 md:grid-cols-3">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <li key={step.title} className="border-t border-primary/20 pt-4">
-                <div className="flex items-start justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-                    Step {index + 1}
-                  </span>
-                  <Icon className="h-4 w-4 text-primary" />
-                </div>
-                <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{step.detail}</p>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[2rem] border border-border/80 bg-white px-5 py-6 md:px-8 md:py-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-            Car Pool Benefits
-          </p>
-          <h2 className="mt-2 max-w-[20ch] text-2xl font-semibold leading-tight md:text-3xl">
-            Why PG2 residents are shifting to Car Pool rides
-          </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {benefits.map((item) => {
-              const Icon = item.icon;
-              return (
-                <article key={item.title} className="border-t border-border/80 pt-4">
-                  <Icon className="h-4 w-4 text-primary" />
-                  <h3 className="mt-3 text-base font-semibold">{item.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
-                </article>
-              );
-            })}
-          </div>
-        </article>
-
-        <article className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-[linear-gradient(155deg,rgba(14,109,67,1)_0%,rgba(25,147,96,1)_56%,rgba(36,181,126,1)_100%)] px-5 py-6 text-white md:px-6 md:py-8">
-          <div className="pointer-events-none absolute -bottom-16 -right-10 h-52 w-52 rounded-full border border-white/20" />
-          <div className="pointer-events-none absolute -top-16 -left-10 h-44 w-44 rounded-full border border-white/15" />
-
-          <div className="relative space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
-              Car Pool Ready
-            </p>
-            <h2 className="max-w-[14ch] text-2xl font-semibold leading-tight md:text-3xl">
-              Start your first Car Pool trip today.
-            </h2>
-            <p className="text-sm text-white/90">
-              Works on mobile and desktop, with PWA install and admin-managed approvals.
-            </p>
-
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <UsersRound className="h-4 w-4" />
-                Driver and passenger roles
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                Admin approval and UMS controls
-              </li>
-              <li className="flex items-center gap-2">
-                <BadgeIndianRupee className="h-4 w-4" />
-                Fixed route charge guidance
-              </li>
-            </ul>
-
-            <div className="overflow-hidden rounded-2xl border border-white/30 bg-white/15">
-              <Image
-                src="/branding/hero-cars.svg"
-                alt="Car Pool commute visual"
-                width={1200}
-                height={760}
-                className="h-36 w-full object-cover"
-              />
-            </div>
-
-            <Button asChild variant="secondary" className="bg-white text-primary hover:bg-white/90">
-              <Link href="/login">Continue to Car Pool Login</Link>
+            <Button asChild variant="outline" className="border-primary/30">
+              <Link href="/login">Join Pilot Access</Link>
             </Button>
           </div>
-        </article>
-      </section>
-    </MobileShell>
+
+          <ol className="mt-7 grid gap-6 md:grid-cols-3">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <li key={step.title} className="border-t border-primary/20 pt-4">
+                  <div className="flex items-start justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+                      Step {index + 1}
+                    </span>
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{step.detail}</p>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <article className="rounded-[2rem] border border-border/80 bg-white px-5 py-6 md:px-8 md:py-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+              Car Pool Benefits
+            </p>
+            <h2 className="mt-2 max-w-[20ch] text-2xl font-semibold leading-tight md:text-3xl">
+              Why PG2 residents are shifting to Car Pool rides
+            </h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {benefits.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <article key={item.title} className="border-t border-border/80 pt-4">
+                    <Icon className="h-4 w-4 text-primary" />
+                    <h3 className="mt-3 text-base font-semibold">{item.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </article>
+
+          <article className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-[linear-gradient(155deg,rgba(14,109,67,1)_0%,rgba(25,147,96,1)_56%,rgba(36,181,126,1)_100%)] px-5 py-6 text-white md:px-6 md:py-8">
+            <div className="pointer-events-none absolute -bottom-16 -right-10 h-52 w-52 rounded-full border border-white/20" />
+            <div className="pointer-events-none absolute -top-16 -left-10 h-44 w-44 rounded-full border border-white/15" />
+
+            <div className="relative space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
+                Car Pool Ready
+              </p>
+              <h2 className="max-w-[14ch] text-2xl font-semibold leading-tight md:text-3xl">
+                Start your first Car Pool trip today.
+              </h2>
+              <p className="text-sm text-white/90">
+                Works on mobile and desktop, with PWA install and admin-managed approvals.
+              </p>
+
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <UsersRound className="h-4 w-4" />
+                  Driver and passenger roles
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Admin approval and UMS controls
+                </li>
+                <li className="flex items-center gap-2">
+                  <BadgeIndianRupee className="h-4 w-4" />
+                  Fixed route charge guidance
+                </li>
+              </ul>
+
+              <div className="overflow-hidden rounded-2xl border border-white/30 bg-white/15">
+                <Image
+                  src="/branding/hero-cars.svg"
+                  alt="Car Pool commute visual"
+                  width={1200}
+                  height={760}
+                  className="h-36 w-full object-cover"
+                />
+              </div>
+
+              <Button
+                asChild
+                variant="secondary"
+                className="bg-white text-primary hover:bg-white/90"
+              >
+                <Link href="/login">Continue to Car Pool Login</Link>
+              </Button>
+            </div>
+          </article>
+        </section>
+      </MobileShell>
+    </>
   );
 }

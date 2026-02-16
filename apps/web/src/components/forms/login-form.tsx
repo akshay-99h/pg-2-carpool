@@ -19,10 +19,17 @@ import {
 import { Input } from '@/components/ui/input';
 import { apiFetch } from '@/lib/fetcher';
 
-export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
+export function LoginForm({
+  className,
+  mode = 'default',
+  ...props
+}: React.ComponentProps<'div'> & {
+  mode?: 'default' | 'pwa';
+}) {
   const router = useRouter();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
+  const googleButtonWidth = mode === 'pwa' ? 280 : 320;
 
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -106,20 +113,30 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
       size: 'large',
       shape: 'pill',
       text: 'signin_with',
-      width: '320',
+      width: `${googleButtonWidth}`,
     });
-  }, [googleClientId, googleReady, router]);
+  }, [googleButtonWidth, googleClientId, googleReady, router]);
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className={cn('flex flex-col gap-6', mode === 'pwa' ? 'gap-3' : '', className)} {...props}>
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => setGoogleReady(true)}
       />
-      <Card className="overflow-hidden rounded-3xl border border-border bg-white/90 p-0 shadow-[0_24px_50px_-35px_rgba(16,55,34,0.45)]">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8" onSubmit={onSubmit}>
+      <Card
+        className={cn(
+          'overflow-hidden rounded-3xl border border-border bg-white/90 p-0 shadow-[0_24px_50px_-35px_rgba(16,55,34,0.45)]',
+          mode === 'pwa' ? 'border-primary/20 shadow-[0_20px_48px_-35px_rgba(16,55,34,0.45)]' : ''
+        )}
+      >
+        <CardContent
+          className={cn('grid p-0 md:grid-cols-2', mode === 'pwa' ? 'md:grid-cols-1' : '')}
+        >
+          <form
+            className={cn('p-6 md:p-8', mode === 'pwa' ? 'p-5 md:p-5' : '')}
+            onSubmit={onSubmit}
+          >
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -221,7 +238,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </FieldGroup>
           </form>
 
-          <div className="relative hidden min-h-[520px] md:block">
+          <div
+            className={cn(
+              'relative hidden min-h-[520px] md:block',
+              mode === 'pwa' ? 'md:hidden' : ''
+            )}
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500" />
             <Image
               src="/branding/hero-cars.svg"
@@ -241,7 +263,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           </div>
         </CardContent>
       </Card>
-      <FieldDescription className="px-2 text-center">
+      <FieldDescription className={cn('px-2 text-center', mode === 'pwa' ? 'text-xs' : '')}>
         For approval support, contact PG2 admin team from the core society group.
       </FieldDescription>
     </div>
