@@ -10,7 +10,7 @@ export default async function TripsPage() {
 
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardContent className="flex items-center justify-between gap-3 p-5">
           <div>
             <p className="text-lg font-semibold">Book a Car Pool ride</p>

@@ -29,7 +29,7 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="auth-hero-card">
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_1fr]">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -45,10 +45,7 @@ export default async function DashboardHomePage() {
               {stats.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div
-                    key={item.label}
-                    className="rounded-xl border border-border bg-accent/55 p-3"
-                  >
+                  <div key={item.label} className="auth-tile p-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm text-muted-foreground">{item.label}</p>
                       <Icon className="h-4 w-4 text-primary" />
@@ -60,7 +57,7 @@ export default async function DashboardHomePage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-accent/35 p-3">
+          <div className="auth-tile p-3">
             <p className="text-sm font-semibold">Quick actions</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               <Button asChild className="w-full justify-start">
@@ -88,7 +85,7 @@ export default async function DashboardHomePage() {
 
       <Card>
         <CardContent className="pt-5">
-          <div className="flex items-start gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 text-sm">
+          <div className="auth-tile flex items-start gap-3 p-3 text-sm">
             <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
             <p>
               Private vehicle sharing only for expense split. Commercial usage is not allowed. All

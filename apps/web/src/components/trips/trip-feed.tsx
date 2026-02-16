@@ -158,7 +158,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
 
   return (
     <div className="space-y-3">
-      <Card className="overflow-hidden border-primary/20 bg-white">
+      <Card className="auth-hero-card overflow-hidden border-primary/20 bg-white">
         <div className="relative h-44 overflow-hidden border-b border-primary/15 bg-[linear-gradient(125deg,rgba(10,185,198,0.88)_0%,rgba(32,160,133,0.75)_35%,rgba(255,255,255,0.35)_65%,rgba(255,255,255,0.95)_100%)]">
           <div className="absolute left-6 top-6 rounded-full border border-white/70 bg-white/80 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-foreground">
             Car Pool Booking
@@ -257,7 +257,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
       {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
 
       {!loading && filteredTrips.length === 0 ? (
-        <Card>
+        <Card className="auth-hero-card">
           <CardContent className="space-y-2 p-5 text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">No matching rides found</p>
             <p>Try another destination or clear your date/time filters.</p>
@@ -272,7 +272,10 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
           const seatsLeft = Math.max(0, trip.seatsAvailable - trip.seatsBooked);
 
           return (
-            <Card key={trip.id} className="overflow-hidden border-border/80 bg-white">
+            <Card
+              key={trip.id}
+              className="auth-hero-card overflow-hidden border-border/80 bg-white"
+            >
               <CardContent className="space-y-4 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-2">
@@ -293,7 +296,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                   </div>
                 </div>
 
-                <div className="space-y-2 rounded-2xl border border-border bg-accent/35 p-3 text-sm">
+                <div className="auth-tile space-y-2 p-3 text-sm">
                   <p className="inline-flex items-center gap-2 text-muted-foreground">
                     <MapPinned className="h-4 w-4 text-primary" />
                     {trip.route || 'Route details will be shared by driver'}

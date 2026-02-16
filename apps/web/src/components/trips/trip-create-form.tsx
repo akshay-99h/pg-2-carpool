@@ -63,7 +63,7 @@ export function TripCreateForm() {
   };
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Post your trip</CardTitle>
         <CardDescription>

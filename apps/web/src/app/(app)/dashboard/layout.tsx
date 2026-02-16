@@ -13,7 +13,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const user = await requireProfileCompletion();
 
   return (
-    <MobileShell>
+    <MobileShell className="auth-aesthetic">
       <header className="app-surface rounded-2xl p-4 md:p-5">
         <div className="flex items-start justify-between gap-3">
           <AppLogo compact />

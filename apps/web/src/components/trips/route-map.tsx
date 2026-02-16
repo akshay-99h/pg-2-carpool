@@ -24,7 +24,7 @@ export function RouteMap() {
 
   return (
     <div className="grid gap-3 lg:grid-cols-[340px_1fr] lg:items-start">
-      <Card className="lg:sticky lg:top-6">
+      <Card className="auth-hero-card lg:sticky lg:top-6">
         <CardHeader>
           <CardTitle>Route map</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -57,11 +57,11 @@ export function RouteMap() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="auth-hero-card">
         <CardContent className="p-0">
           <iframe
             title="Route map"
-            className="h-[380px] w-full rounded-2xl lg:h-[560px]"
+            className="h-[380px] w-full rounded-[1.35rem] lg:h-[560px]"
             loading="lazy"
             allowFullScreen
             src={mapSrc}

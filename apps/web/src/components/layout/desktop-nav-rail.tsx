@@ -24,10 +24,10 @@ export function DesktopNavRail() {
               <Link
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition',
+                  'flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition',
                   active
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground/80 hover:bg-accent hover:text-foreground'
+                    ? 'border-primary/25 bg-primary/10 text-primary'
+                    : 'text-foreground/80 hover:border-primary/15 hover:bg-accent hover:text-foreground'
                 )}
               >
                 <Icon className="h-4 w-4" />

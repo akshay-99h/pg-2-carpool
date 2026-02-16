@@ -57,7 +57,7 @@ export function OnboardingForm({
   };
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle className="text-xl">Resident registration</CardTitle>
         <CardDescription>

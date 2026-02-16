@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = await requireAdminUser();
 
   return (
-    <MobileShell withBottomInset={false}>
+    <MobileShell withBottomInset={false} className="auth-aesthetic">
       <header className="app-surface space-y-3 rounded-2xl p-4 md:p-5">
         <div className="flex items-start justify-between gap-3">
           <AppLogo compact />

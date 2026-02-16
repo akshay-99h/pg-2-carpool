@@ -25,11 +25,11 @@ export default async function ApprovalPendingPage() {
   }
 
   return (
-    <MobileShell withBottomInset={false} className="pt-6">
+    <MobileShell withBottomInset={false} className="auth-aesthetic pt-6">
       <div className="app-surface rounded-2xl p-4">
         <AppLogo compact />
       </div>
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <Badge variant="warning" className="status-pill w-fit px-2.5 py-1">
             {user.approvalStatus}
@@ -37,7 +37,7 @@ export default async function ApprovalPendingPage() {
           <CardTitle className="text-xl">Profile under admin review</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2 rounded-xl border border-amber-300/45 bg-amber-50/80 p-3 text-amber-900">
+          <div className="auth-tile flex items-center gap-2 p-3 text-amber-900">
             <Clock4 className="h-4 w-4" />
             <p className="font-medium">Ride posting is paused until approval is complete.</p>
           </div>

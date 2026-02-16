@@ -7,7 +7,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>My profile</CardTitle>
         </CardHeader>

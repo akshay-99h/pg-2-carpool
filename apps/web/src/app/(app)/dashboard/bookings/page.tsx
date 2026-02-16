@@ -7,7 +7,7 @@ export default async function BookingsPage() {
 
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardContent className="pt-5">
           <p className="text-lg font-semibold">Booking confirmations</p>
           <p className="text-sm text-muted-foreground">

@@ -31,6 +31,7 @@ export function UmsManager() {
   const [invites, setInvites] = useState<AdminInvite[]>([]);
   const [adminEmail, setAdminEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeUserId, setActiveUserId] = useState('');
   const [status, setStatus] = useState('');
 
   const load = useCallback(async () => {
@@ -55,6 +56,7 @@ export function UmsManager() {
     userId: string,
     patch: Partial<{ role: 'USER' | 'ADMIN'; approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED' }>
   ) => {
+    setActiveUserId(userId);
     setLoading(true);
     setStatus('');
     try {
@@ -68,10 +70,12 @@ export function UmsManager() {
       setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to update user');
     } finally {
       setLoading(false);
+      setActiveUserId('');
     }
   };
 
   const addAdmin = async () => {
+    setActiveUserId('');
     setLoading(true);
     setStatus('');
     try {
@@ -89,9 +93,36 @@ export function UmsManager() {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    const confirmDelete = window.confirm(
+      'Delete this user account? This removes profile, trips, and booking data.'
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    setActiveUserId(userId);
+    setLoading(true);
+    setStatus('');
+    try {
+      await apiFetch('/api/admin/users', {
+        method: 'DELETE',
+        body: JSON.stringify({ userId }),
+      });
+      await load();
+      setStatus('User deleted successfully.');
+    } catch (errorValue) {
+      setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to delete user');
+    } finally {
+      setLoading(false);
+      setActiveUserId('');
+    }
+  };
+
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Add admin</CardTitle>
         </CardHeader>
@@ -107,10 +138,7 @@ export function UmsManager() {
           </Button>
           <div className="space-y-2 pt-2">
             {invites.map((invite) => (
-              <p
-                key={invite.id}
-                className="rounded-lg border border-border bg-accent/55 p-2 text-xs text-muted-foreground"
-              >
+              <p key={invite.id} className="auth-subtle p-2 text-xs text-muted-foreground">
                 {invite.email}
               </p>
             ))}
@@ -118,16 +146,13 @@ export function UmsManager() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>User Management System (UMS)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {users.map((user) => (
-            <div
-              key={user.id}
-              className="space-y-2 rounded-xl border border-border bg-accent/55 p-3"
-            >
+            <div key={user.id} className="auth-tile space-y-2 p-3">
               <p className="text-sm font-semibold">{user.profile?.name ?? user.email}</p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
               <p className="text-xs text-muted-foreground">{user.profile?.towerFlat}</p>
@@ -137,6 +162,7 @@ export function UmsManager() {
                   onChange={(event) =>
                     updateUser(user.id, { role: event.target.value as 'USER' | 'ADMIN' })
                   }
+                  disabled={loading && activeUserId === user.id}
                 >
                   <option value="USER">USER</option>
                   <option value="ADMIN">ADMIN</option>
@@ -148,12 +174,25 @@ export function UmsManager() {
                       approvalStatus: event.target.value as 'PENDING' | 'APPROVED' | 'REJECTED',
                     })
                   }
+                  disabled={loading && activeUserId === user.id}
                 >
                   <option value="PENDING">PENDING</option>
                   <option value="APPROVED">APPROVED</option>
                   <option value="REJECTED">REJECTED</option>
                 </Select>
               </div>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => deleteUser(user.id)}
+                disabled={loading && activeUserId === user.id}
+                className="w-full"
+              >
+                {loading && activeUserId === user.id ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Delete User
+              </Button>
             </div>
           ))}
 

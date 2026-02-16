@@ -11,7 +11,7 @@ export default async function TermsPage() {
   });
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>{terms?.title ?? 'Terms & Conditions'}</CardTitle>
       </CardHeader>

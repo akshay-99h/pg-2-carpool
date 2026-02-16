@@ -26,10 +26,10 @@ export function AdminNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              'rounded-xl border border-border bg-white p-3 text-sm font-medium transition',
+              'rounded-xl border border-border bg-white/85 p-3 text-sm font-medium transition',
               active
                 ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'text-foreground/85 hover:bg-accent'
+                : 'text-foreground/85 hover:border-primary/20 hover:bg-accent'
             )}
           >
             <div className="flex items-center gap-2">

@@ -53,7 +53,7 @@ export function ContactManager() {
   };
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Contact Queries</CardTitle>
       </CardHeader>
@@ -64,10 +64,7 @@ export function ContactManager() {
         ) : null}
 
         {queries.map((query) => (
-          <div
-            key={query.id}
-            className="space-y-2 rounded-xl border border-border bg-accent/55 p-3 text-sm"
-          >
+          <div key={query.id} className="auth-tile space-y-2 p-3 text-sm">
             <div className="flex items-center justify-between gap-2">
               <p className="font-semibold">{query.name}</p>
               <Badge

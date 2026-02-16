@@ -118,6 +118,76 @@ body {
     background-image: radial-gradient(hsl(var(--primary) / 0.2) 1px, transparent 1px);
     background-size: 18px 18px;
   }
+
+  .auth-aesthetic .app-surface {
+    border: 1px solid hsl(var(--primary) / 0.18);
+    border-radius: 1.35rem;
+    background: linear-gradient(
+      145deg,
+      hsl(var(--card) / 0.95) 0%,
+      hsl(var(--background) / 0.94) 58%,
+      hsl(var(--card) / 0.98) 100%
+    );
+    box-shadow: 0 20px 44px -34px rgba(14, 72, 55, 0.45);
+  }
+
+  .card-surface {
+    border-radius: 1.35rem;
+    border: 1px solid hsl(var(--border) / 0.9);
+    background: hsl(var(--card));
+    box-shadow: 0 12px 24px -26px rgba(18, 39, 36, 0.3);
+  }
+
+  .auth-aesthetic .card-surface {
+    position: relative;
+    overflow: hidden;
+    border-color: hsl(var(--primary) / 0.16);
+    background: linear-gradient(
+      140deg,
+      hsl(var(--card) / 0.98) 0%,
+      hsl(44 46% 98% / 0.9) 48%,
+      hsl(var(--card) / 0.96) 100%
+    );
+    box-shadow: 0 24px 48px -34px rgba(13, 79, 59, 0.42);
+  }
+
+  .auth-aesthetic .card-surface::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--primary) / 0.26) 18%,
+      hsl(var(--secondary) / 0.24) 52%,
+      hsl(var(--primary) / 0.24) 84%,
+      transparent 100%
+    );
+  }
+
+  .auth-aesthetic .auth-hero-card {
+    border-color: hsl(var(--primary) / 0.2);
+    background: linear-gradient(
+      120deg,
+      hsl(var(--primary) / 0.12) 0%,
+      hsl(var(--card) / 0.96) 36%,
+      hsl(var(--card) / 0.94) 100%
+    );
+  }
+
+  .auth-aesthetic .auth-tile {
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--primary) / 0.16);
+    background: linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--accent) / 0.7));
+  }
+
+  .auth-aesthetic .auth-subtle {
+    border-radius: 0.9rem;
+    border: 1px solid hsl(var(--border) / 0.8);
+    background: hsl(var(--card) / 0.9);
+  }
 }
 
 @keyframes acet-aurora {

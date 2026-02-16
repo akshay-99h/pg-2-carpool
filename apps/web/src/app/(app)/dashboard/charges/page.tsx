@@ -12,7 +12,7 @@ export default async function ChargesPage() {
   });
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Charges List</CardTitle>
       </CardHeader>
@@ -21,7 +21,7 @@ export default async function ChargesPage() {
           <p className="text-sm text-muted-foreground">No charge list available.</p>
         ) : null}
         {charges.map((charge) => (
-          <div key={charge.id} className="rounded-xl border bg-card p-3">
+          <div key={charge.id} className="auth-tile p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold">{charge.routeName}</p>
               <p className="text-sm font-bold text-primary">{formatCurrencyInr(charge.amount)}</p>

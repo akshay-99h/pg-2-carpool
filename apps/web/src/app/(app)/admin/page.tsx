@@ -17,31 +17,31 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Admin Overview</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-2 text-sm">
-          <div className="rounded-xl border border-border bg-accent/55 p-3">
+          <div className="auth-tile p-3">
             <p className="text-xs text-muted-foreground">Total Users</p>
             <p className="mt-1 text-2xl font-semibold">{totalUsers}</p>
           </div>
-          <div className="rounded-xl border border-border bg-accent/55 p-3">
+          <div className="auth-tile p-3">
             <p className="text-xs text-muted-foreground">Pending Approvals</p>
             <p className="mt-1 text-2xl font-semibold">{pendingUsers}</p>
           </div>
-          <div className="rounded-xl border border-border bg-accent/55 p-3">
+          <div className="auth-tile p-3">
             <p className="text-xs text-muted-foreground">Active Trips</p>
             <p className="mt-1 text-2xl font-semibold">{totalTrips}</p>
           </div>
-          <div className="rounded-xl border border-border bg-accent/55 p-3">
+          <div className="auth-tile p-3">
             <p className="text-xs text-muted-foreground">Open Queries</p>
             <p className="mt-1 text-2xl font-semibold">{openContacts}</p>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle className="text-lg">Admin actions</CardTitle>
         </CardHeader>

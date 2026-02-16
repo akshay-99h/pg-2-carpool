@@ -5,8 +5,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TimePicker } from '@/components/ui/time-picker';
+import { combineDateAndTimeToIso, toDateInputValue, toTimeInputValue } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
 
@@ -26,10 +29,12 @@ type PoolRequest = {
 };
 
 export function PoolRequestBoard() {
+  const defaultTravel = new Date(Date.now() + 30 * 60 * 1000);
   const [from, setFrom] = useState('Panchsheel Greens 2');
   const [to, setTo] = useState('');
   const [route, setRoute] = useState('');
-  const [travelAt, setTravelAt] = useState('');
+  const [travelDate, setTravelDate] = useState(toDateInputValue(defaultTravel));
+  const [travelTime, setTravelTime] = useState(toTimeInputValue(defaultTravel));
   const [seatsNeeded, setSeatsNeeded] = useState('1');
   const [poolRequests, setPoolRequests] = useState<PoolRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,6 +54,12 @@ export function PoolRequestBoard() {
   }, [load]);
 
   const onPost = async () => {
+    const travelAtIso = combineDateAndTimeToIso(travelDate, travelTime);
+    if (!travelAtIso) {
+      setError('Please choose a valid travel date and time.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -59,14 +70,13 @@ export function PoolRequestBoard() {
           from,
           to,
           route,
-          travelAtIso: new Date(travelAt).toISOString(),
+          travelAtIso,
           seatsNeeded: Number(seatsNeeded),
         }),
       });
 
       setTo('');
       setRoute('');
-      setTravelAt('');
       setSeatsNeeded('1');
       await load();
     } catch (errorValue) {
@@ -78,7 +88,7 @@ export function PoolRequestBoard() {
 
   return (
     <div className="grid gap-3 xl:grid-cols-[0.95fr_1.05fr]">
-      <Card className="xl:sticky xl:top-6">
+      <Card className="auth-hero-card xl:sticky xl:top-6">
         <CardHeader>
           <CardTitle>Post pool request</CardTitle>
           <CardDescription>
@@ -99,12 +109,12 @@ export function PoolRequestBoard() {
             <Input value={route} onChange={(event) => setRoute(event.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Date and Time</Label>
-            <Input
-              type="datetime-local"
-              value={travelAt}
-              onChange={(event) => setTravelAt(event.target.value)}
-            />
+            <Label>Date</Label>
+            <DatePicker value={travelDate} onValueChange={setTravelDate} />
+          </div>
+          <div className="space-y-2">
+            <Label>Time</Label>
+            <TimePicker value={travelTime} onValueChange={setTravelTime} step={300} />
           </div>
           <div className="space-y-2">
             <Label>Seats needed</Label>
@@ -124,7 +134,7 @@ export function PoolRequestBoard() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Open requests</CardTitle>
           <CardDescription>Recent rider demand from society members.</CardDescription>
@@ -134,10 +144,7 @@ export function PoolRequestBoard() {
             <p className="text-sm text-muted-foreground">No open pool requests.</p>
           ) : null}
           {poolRequests.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-xl border border-border bg-accent/45 p-3 text-sm transition hover:bg-accent/60"
-            >
+            <div key={item.id} className="auth-tile p-3 text-sm transition hover:bg-accent/60">
               <p className="font-semibold leading-snug">
                 {item.fromLocation} → {item.toLocation}
               </p>

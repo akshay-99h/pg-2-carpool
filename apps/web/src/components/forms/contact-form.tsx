@@ -43,7 +43,7 @@ export function ContactForm({
   };
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Contact us</CardTitle>
         <CardDescription>Ask support, report issues, or suggest improvements.</CardDescription>

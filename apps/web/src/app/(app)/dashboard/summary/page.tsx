@@ -5,7 +5,7 @@ export default async function SummaryPage() {
   await requireApprovedUser();
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Project Summary</CardTitle>
       </CardHeader>

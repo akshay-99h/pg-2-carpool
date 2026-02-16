@@ -92,7 +92,7 @@ export function ContentManager() {
 
   return (
     <div className="space-y-3">
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Manage Charges</CardTitle>
         </CardHeader>
@@ -123,7 +123,7 @@ export function ContentManager() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Manage Terms & Conditions</CardTitle>
         </CardHeader>

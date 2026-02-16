@@ -49,7 +49,7 @@ export function ApprovalsManager() {
   };
 
   return (
-    <Card>
+    <Card className="auth-hero-card">
       <CardHeader>
         <CardTitle>Pending approvals</CardTitle>
       </CardHeader>
@@ -60,7 +60,7 @@ export function ApprovalsManager() {
         ) : null}
 
         {users.map((user) => (
-          <div key={user.id} className="rounded-xl border border-border bg-accent/55 p-3 text-sm">
+          <div key={user.id} className="auth-tile p-3 text-sm">
             <div className="mb-2 flex items-center justify-between">
               <p className="font-semibold">{user.profile?.name ?? user.email ?? 'Resident'}</p>
               <Badge variant="warning">PENDING</Badge>
