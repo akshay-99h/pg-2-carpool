@@ -53,7 +53,7 @@ export async function PATCH(
 
     if (hasStatusUpdate) {
       if (!isDriverOrAdmin) {
-        return forbidden('Only driver/admin can update request status');
+        return forbidden('Only car owner/admin can update request status');
       }
 
       if (

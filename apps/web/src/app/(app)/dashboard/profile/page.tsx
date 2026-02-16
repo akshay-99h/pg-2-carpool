@@ -4,6 +4,7 @@ import { requireProfileCompletion } from '@/server/auth-guards';
 
 export default async function ProfilePage() {
   const user = await requireProfileCompletion();
+  const approvalLabel = user.approvalStatus === 'APPROVED' ? 'APPROVED' : 'AWAITED';
 
   return (
     <div className="space-y-3">
@@ -12,8 +13,7 @@ export default async function ProfilePage() {
           <CardTitle>My profile</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Approval status:{' '}
-          <span className="font-semibold text-foreground">{user.approvalStatus}</span>
+          Approval status: <span className="font-semibold text-foreground">{approvalLabel}</span>
         </CardContent>
       </Card>
       <OnboardingForm

@@ -2,6 +2,7 @@
 
 import type { CommuteRole } from '@/lib/schemas';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -14,6 +15,8 @@ import { apiFetch } from '@/lib/fetcher';
 
 export function OnboardingForm({
   initial,
+  submitLabel = 'Save and continue',
+  showLoginAction = false,
 }: {
   initial?: {
     name?: string;
@@ -22,6 +25,8 @@ export function OnboardingForm({
     vehicleNumber?: string | null;
     mobileNumber?: string;
   };
+  submitLabel?: string;
+  showLoginAction?: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = useState(initial?.name ?? '');
@@ -87,7 +92,7 @@ export function OnboardingForm({
             value={commuteRole}
             onChange={(event) => setCommuteRole(event.target.value as CommuteRole)}
           >
-            <option value="VEHICLE_OWNER">Vehicle Owner</option>
+            <option value="VEHICLE_OWNER">Car owner</option>
             <option value="PASSENGER">Passenger</option>
             <option value="BOTH">Both</option>
           </Select>
@@ -115,10 +120,19 @@ export function OnboardingForm({
 
         {error ? <p className="text-sm font-medium text-red-700 md:col-span-2">{error}</p> : null}
 
-        <Button className="w-full md:col-span-2" onClick={onSave} disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Save and continue
-        </Button>
+        <div
+          className={showLoginAction ? 'grid gap-2 md:col-span-2 md:grid-cols-2' : 'md:col-span-2'}
+        >
+          <Button className="w-full" onClick={onSave} disabled={loading}>
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {submitLabel}
+          </Button>
+          {showLoginAction ? (
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Login</Link>
+            </Button>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   );

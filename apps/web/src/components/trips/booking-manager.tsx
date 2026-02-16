@@ -225,7 +225,7 @@ export function BookingManager() {
                   {formatDateTime(item.trip.departAt)}
                 </p>
                 <p className="mt-1 text-muted-foreground">
-                  Driver: {item.trip.driver.profile?.name ?? 'Resident'}
+                  Car owner: {item.trip.driver.profile?.name ?? 'Resident'}
                 </p>
                 <div className="mt-3 space-y-2">
                   <Input
@@ -236,7 +236,7 @@ export function BookingManager() {
                         [item.id]: event.target.value,
                       }))
                     }
-                    placeholder="Booking note for driver"
+                    placeholder="Booking note for car owner"
                     disabled={item.status !== 'PENDING' || busyId === item.id}
                   />
                   <div className="flex gap-2">

@@ -13,9 +13,15 @@ export function PwaAdaptiveLogin() {
 
   if (isPwaMobile) {
     return (
-      <main className="min-h-screen bg-[linear-gradient(180deg,#daf9f6_0%,#f9fefb_100%)] pb-[env(safe-area-inset-bottom)]">
-        <section className="p-3 pb-0">
-          <div className="h-[54vh]">
+      <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,#daf9f6_0%,#f9fefb_100%)] pb-[env(safe-area-inset-bottom)]">
+        <section className="relative p-3 pb-0">
+          <div className="absolute left-0 right-0 top-6 z-20 flex justify-center px-5">
+            <span className="rounded-full border border-white/35 bg-black/20 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur">
+              Resident commute network
+            </span>
+          </div>
+
+          <div className="h-[51vh]">
             <MobileImageCarousel
               slides={pwaCommuteSlides.slice(0, 4)}
               className="h-full"
@@ -24,10 +30,15 @@ export function PwaAdaptiveLogin() {
           </div>
         </section>
 
-        <section className="-mt-6 rounded-t-[2.1rem] border-t border-primary/20 bg-white/95 px-4 pt-4 backdrop-blur">
-          <AppLogo compact />
+        <section className="-mt-8 rounded-t-[2.3rem] border-t border-primary/20 bg-white/95 px-4 pt-5 backdrop-blur">
+          <div className="flex items-center justify-between gap-3">
+            <AppLogo compact />
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-primary">
+              Secure Login
+            </span>
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Residents-only access. Login with Email OTP or Google.
+            Residents-only access with Email OTP or Google sign-in.
           </p>
           <LoginForm mode="pwa" className="mt-3 pb-4" />
         </section>

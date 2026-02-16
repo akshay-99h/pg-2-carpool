@@ -12,20 +12,43 @@ type MobileImageCarouselProps = {
   slides: PwaSlide[];
   className?: string;
   autoPlayMs?: number;
+  mode?: 'default' | 'hero';
 };
 
 export function MobileImageCarousel({
   slides,
   className,
   autoPlayMs = 4200,
+  mode = 'default',
 }: MobileImageCarouselProps) {
   const [index, setIndex] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const isHero = mode === 'hero';
 
   const safeSlides = useMemo(() => (slides.length > 0 ? slides : []), [slides]);
   const total = safeSlides.length;
+
+  useEffect(() => {
+    if (safeSlides.length === 0) {
+      return;
+    }
+
+    // Preload slide images in the background so swipes feel instant.
+    const preloaded = safeSlides.map((slide) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = slide.imageUrl;
+      return image;
+    });
+
+    return () => {
+      for (const image of preloaded) {
+        image.src = '';
+      }
+    };
+  }, [safeSlides]);
 
   useEffect(() => {
     if (!autoplay || total <= 1) {
@@ -48,7 +71,11 @@ export function MobileImageCarousel({
 
   return (
     <section
-      className={cn('relative overflow-hidden rounded-[2rem] border border-primary/20', className)}
+      className={cn(
+        'relative overflow-hidden border border-primary/20',
+        isHero ? 'rounded-[2.25rem]' : 'rounded-[2rem]',
+        className
+      )}
       onTouchStart={(event) => {
         touchStartX.current = event.touches[0]?.clientX ?? null;
         touchStartY.current = event.touches[0]?.clientY ?? null;
@@ -83,41 +110,69 @@ export function MobileImageCarousel({
         className="flex h-full w-full transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {safeSlides.map((slide) => (
-          <article key={slide.imageUrl} className="relative min-w-full">
-            <img
-              src={slide.imageUrl}
-              alt={slide.imageAlt}
-              loading="lazy"
-              className="h-full min-h-[360px] w-full object-cover"
+        {safeSlides.map((slide, slideIndex) => (
+          <article key={slide.imageUrl} className="relative h-full min-w-full">
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[1800ms] ease-out"
+              style={{
+                backgroundImage: `url(${slide.imageUrl})`,
+                transform: slideIndex === index ? 'scale(1.04)' : 'scale(1)',
+              }}
             />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,34,30,0.08)_12%,rgba(8,34,30,0.68)_74%,rgba(8,34,30,0.88)_100%)]" />
+            <span className="sr-only">{slide.imageAlt}</span>
+            <div
+              className={cn(
+                'pointer-events-none absolute inset-0',
+                isHero
+                  ? 'bg-[linear-gradient(180deg,rgba(8,34,30,0.14)_4%,rgba(8,34,30,0.5)_46%,rgba(8,34,30,0.9)_100%)]'
+                  : 'bg-[linear-gradient(180deg,rgba(8,34,30,0.08)_12%,rgba(8,34,30,0.68)_74%,rgba(8,34,30,0.88)_100%)]'
+              )}
+            />
           </article>
         ))}
       </div>
 
-      <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
-        <span className="rounded-full border border-white/35 bg-black/25 px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-white">
-          {active.chip}
-        </span>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
-          onClick={() => setAutoplay((current) => !current)}
+      {!isHero ? (
+        <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
+          <span className="rounded-full border border-white/35 bg-black/25 px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-white">
+            {active.chip}
+          </span>
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
+            onClick={() => setAutoplay((current) => !current)}
+          >
+            {autoplay ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      ) : null}
+
+      <div
+        className={cn(
+          'absolute left-4 right-4 space-y-2 text-white',
+          isHero ? 'bottom-24 text-center' : 'bottom-16'
+        )}
+      >
+        <p className={cn('font-semibold leading-tight', isHero ? 'text-[2.15rem]' : 'text-2xl')}>
+          {active.title}
+        </p>
+        <p
+          className={cn('text-sm text-white/90', isHero ? 'mx-auto max-w-[32ch]' : 'max-w-[36ch]')}
         >
-          {autoplay ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-        </Button>
+          {active.subtitle}
+        </p>
       </div>
 
-      <div className="absolute bottom-16 left-4 right-4 space-y-2 text-white">
-        <p className="text-2xl font-semibold leading-tight">{active.title}</p>
-        <p className="max-w-[36ch] text-sm text-white/90">{active.subtitle}</p>
-      </div>
-
-      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+      <div
+        className={cn(
+          'absolute left-3 right-3 flex items-center gap-2',
+          isHero ? 'bottom-4 justify-center' : 'bottom-3 justify-between'
+        )}
+      >
+        <div className={cn('flex items-center', isHero ? 'gap-2' : 'gap-1.5')}>
           {safeSlides.map((slide, slideIndex) => (
             <button
               key={slide.imageUrl}
@@ -128,39 +183,42 @@ export function MobileImageCarousel({
               }}
               className={cn(
                 'h-2.5 rounded-full border border-white/35 transition-all',
-                slideIndex === index ? 'w-6 bg-white' : 'w-2.5 bg-white/35'
+                slideIndex === index ? 'w-6 bg-white' : 'w-2.5 bg-white/35',
+                isHero ? 'h-2' : ''
               )}
               aria-label={`Go to slide ${slideIndex + 1}`}
             />
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
-            onClick={() => {
-              setAutoplay(false);
-              setIndex((current) => (current - 1 + total) % total);
-            }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
-            onClick={() => {
-              setAutoplay(false);
-              setIndex((current) => (current + 1) % total);
-            }}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {!isHero ? (
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
+              onClick={() => {
+                setAutoplay(false);
+                setIndex((current) => (current - 1 + total) % total);
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
+              onClick={() => {
+                setAutoplay(false);
+                setIndex((current) => (current + 1) % total);
+              }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

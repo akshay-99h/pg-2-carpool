@@ -299,11 +299,11 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                 <div className="auth-tile space-y-2 p-3 text-sm">
                   <p className="inline-flex items-center gap-2 text-muted-foreground">
                     <MapPinned className="h-4 w-4 text-primary" />
-                    {trip.route || 'Route details will be shared by driver'}
+                    {trip.route || 'Route details will be shared by the car owner'}
                   </p>
                   <p className="inline-flex items-center gap-2 text-muted-foreground">
                     <UsersRound className="h-4 w-4 text-primary" />
-                    Driver: {trip.driver.profile?.name ?? 'Resident'} (
+                    Car owner: {trip.driver.profile?.name ?? 'Resident'} (
                     {trip.driver.profile?.towerFlat ?? 'PG2'})
                   </p>
                   {trip.notes ? (

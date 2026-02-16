@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 
 const benefits = [
   {
-    title: 'Lower Car Pool Cost',
+    title: 'Lower commute cost',
     detail: 'Split fuel, toll, and parking on every shared commute.',
     icon: BadgeIndianRupee,
   },
@@ -46,7 +46,7 @@ const benefits = [
 const steps = [
   {
     title: 'Login in Seconds',
-    detail: 'Use Email OTP or Google sign-in for Car Pool pilot access.',
+    detail: 'Use Email OTP or Google sign-in.',
     icon: Sparkles,
   },
   {
@@ -55,7 +55,7 @@ const steps = [
     icon: ShieldCheck,
   },
   {
-    title: 'Post and Join Car Pool Rides',
+    title: 'Post and Join Rides',
     detail: 'Share daily or one-time trips, request seats, and confirm quickly.',
     icon: CarFront,
   },
@@ -102,18 +102,18 @@ function HeroShowcase() {
       >
         <div className="space-y-3">
           <p className="text-2xl font-semibold leading-tight text-slate-900">
-            Choose your Car Pool role
+            Choose your commute role
           </p>
           <div className="rounded-2xl bg-cyan-100 px-3 py-2 text-sm font-medium text-slate-800">
             Continue as Passenger
           </div>
           <div className="rounded-2xl bg-cyan-50 px-3 py-2 text-sm font-medium text-slate-700">
-            Continue as Driver
+            Continue as Car owner
           </div>
           <div className="relative mt-3 h-24 overflow-hidden rounded-2xl border border-slate-200">
             <Image
               src="/branding/hero-cars.svg"
-              alt="Cars ready for car pool rides"
+              alt="Cars ready for PG2 rides"
               width={1200}
               height={760}
               className="h-full w-full object-cover object-center"
@@ -153,7 +153,7 @@ function HeroShowcase() {
           ))}
         </div>
         <div className="mt-5 rounded-full bg-slate-950 px-3 py-2 text-center text-sm font-medium text-white">
-          Set Car Pool Time
+          Set ride time
         </div>
       </PhoneFrame>
 
@@ -162,9 +162,7 @@ function HeroShowcase() {
         className="md:col-span-1 lg:absolute lg:right-[14.5rem] lg:top-28 lg:w-[16rem] lg:-rotate-[6deg]"
       >
         <p className="text-2xl font-semibold leading-tight text-slate-900">Track your ride</p>
-        <p className="mt-2 text-xs text-slate-500">
-          Know where your Car Pool driver is before pickup.
-        </p>
+        <p className="mt-2 text-xs text-slate-500">Know where your car owner is before pickup.</p>
         <div className="relative mt-4 h-28 rounded-2xl bg-slate-100">
           <div className="absolute left-6 top-8 h-12 w-[72%] rounded-[2rem] border-2 border-dashed border-slate-500/60" />
           <span className="absolute left-4 top-5 flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-xs font-semibold text-slate-900">
@@ -183,9 +181,7 @@ function HeroShowcase() {
         title="Ride feed"
         className="md:col-span-2 lg:absolute lg:right-0 lg:top-12 lg:w-[17rem] lg:rotate-[10deg]"
       >
-        <p className="text-2xl font-semibold leading-tight text-slate-900">
-          Available car pool rides
-        </p>
+        <p className="text-2xl font-semibold leading-tight text-slate-900">Available rides</p>
         <ul className="mt-4 space-y-2">
           {liveRides.map((ride) => (
             <li key={ride.route} className="rounded-2xl border border-slate-200 px-3 py-2">
@@ -217,7 +213,7 @@ export default function LandingPage() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-primary/35 bg-white/90 px-2.5 py-1 text-[0.68rem] text-primary">
-                  Car Pool Pilot | Panchsheel Greens 2
+                  PG2 Commute Network | Panchsheel Greens 2
                 </Badge>
                 <span className="rounded-full border border-primary/20 bg-white/85 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Residents Only
@@ -226,23 +222,23 @@ export default function LandingPage() {
 
               <div className="space-y-3">
                 <h1 className="max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-foreground md:text-[3.85rem]">
-                  Car Pool, designed for everyday PG2 commuting.
+                  Shared rides, designed for everyday PG2 commuting.
                 </h1>
                 <p className="max-w-[58ch] text-sm text-muted-foreground md:text-base">
-                  Post daily and one-time Car Pool rides, request seats instantly, and reduce
-                  commute cost without WhatsApp clutter.
+                  Post daily and one-time rides, request seats instantly, and reduce commute cost
+                  without WhatsApp clutter.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Button asChild className="bg-primary hover:bg-primary/90">
                   <Link href="/login">
-                    Start Car Pool Login
+                    Continue to Login
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="border-primary/30 bg-white/85">
-                  <ScrollLink targetId="how-it-works">How Car Pool Works</ScrollLink>
+                  <ScrollLink targetId="how-it-works">How It Works</ScrollLink>
                 </Button>
               </div>
 
@@ -254,7 +250,7 @@ export default function LandingPage() {
                   Admin-approved residents
                 </span>
                 <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
-                  PWA install support
+                  Mobile app-like experience
                 </span>
               </div>
             </div>
@@ -270,14 +266,14 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-                How Car Pool Works
+                How It Works
               </p>
               <h2 className="mt-2 max-w-[22ch] text-2xl font-semibold leading-tight md:text-3xl">
-                Three steps to start Car Pool in Panchsheel Greens 2
+                Three steps to start commuting in Panchsheel Greens 2
               </h2>
             </div>
             <Button asChild variant="outline" className="border-primary/30">
-              <Link href="/login">Join Pilot Access</Link>
+              <Link href="/login">Open Login</Link>
             </Button>
           </div>
 
@@ -303,10 +299,10 @@ export default function LandingPage() {
         <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="rounded-[2rem] border border-border/80 bg-white px-5 py-6 md:px-8 md:py-8">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              Car Pool Benefits
+              Shared Ride Benefits
             </p>
             <h2 className="mt-2 max-w-[20ch] text-2xl font-semibold leading-tight md:text-3xl">
-              Why PG2 residents are shifting to Car Pool rides
+              Why PG2 residents are shifting to shared rides
             </h2>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {benefits.map((item) => {
@@ -328,19 +324,19 @@ export default function LandingPage() {
 
             <div className="relative space-y-4">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
-                Car Pool Ready
+                Ready to Begin
               </p>
               <h2 className="max-w-[14ch] text-2xl font-semibold leading-tight md:text-3xl">
-                Start your first Car Pool trip today.
+                Start your first trip today.
               </h2>
               <p className="text-sm text-white/90">
-                Works on mobile and desktop, with PWA install and admin-managed approvals.
+                Works on mobile and desktop with admin-managed approvals.
               </p>
 
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <UsersRound className="h-4 w-4" />
-                  Driver and passenger roles
+                  Car owner and passenger roles
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4" />
@@ -355,7 +351,7 @@ export default function LandingPage() {
               <div className="overflow-hidden rounded-2xl border border-white/30 bg-white/15">
                 <Image
                   src="/branding/hero-cars.svg"
-                  alt="Car Pool commute visual"
+                  alt="PG2 commute visual"
                   width={1200}
                   height={760}
                   className="h-36 w-full object-cover"
@@ -367,7 +363,7 @@ export default function LandingPage() {
                 variant="secondary"
                 className="bg-white text-primary hover:bg-white/90"
               >
-                <Link href="/login">Continue to Car Pool Login</Link>
+                <Link href="/login">Continue to Login</Link>
               </Button>
             </div>
           </article>

@@ -43,7 +43,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 href="/approval-pending"
                 className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900"
               >
-                Approval Pending
+                Approval Awaited
               </Link>
             ) : null}
             {user.role === 'ADMIN' ? (

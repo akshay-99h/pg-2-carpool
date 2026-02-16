@@ -51,6 +51,8 @@ export default async function OnboardingPage() {
             <AppLogo compact />
           </div>
           <OnboardingForm
+            submitLabel="Register yourself"
+            showLoginAction
             initial={
               user.profile
                 ? {

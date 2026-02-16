@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Loader2, Mail, RotateCcw } from 'lucide-react';
+import { FileText, Loader2, Mail, RotateCcw, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
@@ -141,7 +141,7 @@ export function LoginForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-balance text-sm text-muted-foreground">
-                  Login to your Panchsheel Greens-II car pool account
+                  Login to your Panchsheel Greens-II resident account
                 </p>
               </div>
 
@@ -232,8 +232,16 @@ export function LoginForm({
                 )}
               </Field>
 
-              <FieldDescription className="text-center">
-                By continuing, you agree to PG2 car pool community terms and safety rules.
+              <FieldDescription className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
+                <span>By continuing, you agree to</span>
+                <span className="inline-flex items-center gap-1">
+                  <FileText className="h-3.5 w-3.5" />
+                  Terms & Conditions
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Safety Rules
+                </span>
               </FieldDescription>
             </FieldGroup>
           </form>

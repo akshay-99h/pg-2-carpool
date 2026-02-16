@@ -8,36 +8,36 @@ export type PwaSlide = {
 
 export const pwaCommuteSlides: PwaSlide[] = [
   {
-    title: 'City traffic, less chaos',
-    subtitle: 'Share rides so PG2 commuters spend less time and money on the road.',
+    title: 'Move with safety',
+    subtitle: 'Travel with verified PG2 residents you can trust every day.',
     imageUrl:
       'https://images.pexels.com/photos/20837335/pexels-photo-20837335.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
     imageAlt: 'Cars in dense city traffic at dusk',
-    chip: 'Traffic',
+    chip: 'Safety',
   },
   {
     title: 'Community-first commute',
-    subtitle: 'Travel with verified residents from your own neighborhood network.',
+    subtitle: 'Share daily routes with residents from your own neighborhood network.',
     imageUrl:
       'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
     imageAlt: 'People from a community smiling together',
     chip: 'Community',
   },
   {
-    title: 'Public transport integration',
-    subtitle: 'Use carpool for first-mile and last-mile routes around metro corridors.',
+    title: 'Better metro connection',
+    subtitle: 'Plan first-mile and last-mile routes around metro corridors.',
     imageUrl:
       'https://images.pexels.com/photos/5323956/pexels-photo-5323956.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
     imageAlt: 'Urban metro train moving through city infrastructure',
     chip: 'Metro',
   },
   {
-    title: 'Smarter car sharing',
-    subtitle: 'Post available seats and fill trips with nearby riders instantly.',
+    title: 'Smarter seat sharing',
+    subtitle: 'Post available seats and match with nearby riders quickly.',
     imageUrl:
       'https://images.pexels.com/photos/10670668/pexels-photo-10670668.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
     imageAlt: 'Cars moving on a modern urban road',
-    chip: 'Car Pool',
+    chip: 'Seat Match',
   },
   {
     title: 'Peak-hour reliability',
