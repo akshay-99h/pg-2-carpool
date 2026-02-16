@@ -38,7 +38,12 @@ Mobile-first carpool platform for Panchsheel Greens 2 with:
 1. Deploy only `apps/web` (or set Vercel Root Directory to `apps/web`).
 2. `apps/web/vercel.json` is preconfigured.
 3. Add required environment variables in Vercel project settings.
-4. Push to git and deploy.
+4. Use these production values for your domain:
+   - `EMAIL_FROM=Car Pool Panchsheel Greens 2 <car_admin@akxost.com>`
+   - `ADMIN_BOOTSTRAP_EMAILS=car_admin@akxost.com`
+   - `NEXT_PUBLIC_APP_URL=https://carpool.akxost.com`
+5. Add custom domain `carpool.akxost.com` in Vercel project Domains.
+6. Push to git and deploy.
 
 `apps/web` is now standalone-deployable and does not depend on monorepo workspace packages.
 
@@ -49,7 +54,7 @@ Mobile-first carpool platform for Panchsheel Greens 2 with:
 3. Open:
    - `http://localhost:3000`
 4. First admin login:
-   - default bootstrap admin email is `admin@example.com`
+   - default bootstrap admin email is `car_admin@akxost.com`
    - change with env var `ADMIN_BOOTSTRAP_EMAILS`
 5. If ports are busy:
    - change app port with `APP_PORT` (default `3000`)
@@ -91,6 +96,16 @@ Mobile-first carpool platform for Panchsheel Greens 2 with:
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (optional fallback exists)
 - `ADMIN_BOOTSTRAP_EMAILS`
 - `NEXT_PUBLIC_APP_URL`
+
+## Domain + Resend Setup (`akxost.com`)
+1. In Resend, add and verify the sending domain `akxost.com`.
+2. Configure sender as:
+   - `car_admin@akxost.com` (or `Car Pool Panchsheel Greens 2 <car_admin@akxost.com>`)
+3. In Vercel, set:
+   - `NEXT_PUBLIC_APP_URL=https://carpool.akxost.com`
+4. In DNS provider for `akxost.com`:
+   - add CNAME record for `carpool` to Vercel target shown in Domains screen
+   - add all Resend DNS records (SPF/DKIM/verification) exactly as shown in Resend
 
 ## Notes
 - First admin can be bootstrapped via `ADMIN_BOOTSTRAP_EMAILS`.

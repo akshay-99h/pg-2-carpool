@@ -15,7 +15,12 @@ This Next.js app is standalone-deployable.
    - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
    - `ADMIN_BOOTSTRAP_EMAILS`
    - `NEXT_PUBLIC_APP_URL`
-4. Deploy.
+4. Recommended production values for your setup:
+   - `EMAIL_FROM=Car Pool Panchsheel Greens 2 <car_admin@akxost.com>`
+   - `ADMIN_BOOTSTRAP_EMAILS=car_admin@akxost.com`
+   - `NEXT_PUBLIC_APP_URL=https://carpool.akxost.com`
+5. Add `carpool.akxost.com` in Vercel Domains for this project.
+6. Deploy.
 
 `vercel-build` automatically runs Prisma generate + schema push + seed before building.
 

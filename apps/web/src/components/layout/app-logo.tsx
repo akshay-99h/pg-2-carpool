@@ -6,25 +6,24 @@ import { cn } from '@/lib/utils';
 export function AppLogo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <Link href="/dashboard" className={cn('inline-flex items-center gap-3', className)}>
-      <div className="shrink-0 rounded-2xl border border-border bg-white p-1.5">
+      <div className="shrink-0 overflow-hidden rounded-full border border-border bg-white">
         <Image
-          src="/branding/pg2-mark.svg"
-          alt="Panchsheel Greens II logo"
-          width={compact ? 38 : 44}
-          height={compact ? 38 : 44}
+          src="/branding/pg2-carpool-logo.jpg"
+          alt="Panchsheel Greens II Car Pool logo"
+          width={compact ? 44 : 52}
+          height={compact ? 44 : 52}
           priority
+          className="h-auto w-auto"
         />
       </div>
       <div className="leading-none">
-        <p className="font-heading text-[1.2rem] font-semibold tracking-tight md:text-[1.38rem]">
-          <span className="text-secondary/95">Panchsheel</span>{' '}
-          <span className="text-primary">Greens-II</span>
+        <p className="font-heading text-[1.14rem] font-semibold tracking-tight md:text-[1.3rem]">
+          <span className="text-primary">Car Pool</span>{' '}
+          <span className="text-secondary/95">Panchsheel Greens-II</span>
         </p>
-        {!compact ? (
-          <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Resident Car Pool Network
-          </p>
-        ) : null}
+        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {compact ? 'PG2 Resident Network' : 'Resident Car Pool Network'}
+        </p>
       </div>
     </Link>
   );

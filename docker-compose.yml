@@ -32,11 +32,11 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/carpool_pg2}
       AUTH_SECRET: ${AUTH_SECRET:-replace-me-in-production}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-Car Pool PG2 <noreply@example.com>}
+      EMAIL_FROM: ${EMAIL_FROM:-Car Pool Panchsheel Greens 2 <car_admin@akxost.com>}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
       NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
-      ADMIN_BOOTSTRAP_EMAILS: ${ADMIN_BOOTSTRAP_EMAILS:-admin@example.com}
+      ADMIN_BOOTSTRAP_EMAILS: ${ADMIN_BOOTSTRAP_EMAILS:-car_admin@akxost.com}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     command: >
       sh -c "

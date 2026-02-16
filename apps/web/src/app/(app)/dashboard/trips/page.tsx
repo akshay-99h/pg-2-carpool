@@ -13,9 +13,9 @@ export default async function TripsPage() {
       <Card>
         <CardContent className="flex items-center justify-between gap-3 p-5">
           <div>
-            <p className="text-lg font-semibold">Trip board</p>
+            <p className="text-lg font-semibold">Book a Car Pool ride</p>
             <p className="text-sm text-muted-foreground">
-              Find matching routes and request seats in one tap.
+              Uber-like booking flow for mobile with quick date and time filters.
             </p>
           </div>
           <Button asChild className="hidden sm:inline-flex">

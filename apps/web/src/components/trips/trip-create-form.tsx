@@ -6,25 +6,36 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { TimePicker } from '@/components/ui/time-picker';
+import { combineDateAndTimeToIso, toDateInputValue, toTimeInputValue } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 
 export function TripCreateForm() {
   const router = useRouter();
+  const defaultDeparture = new Date(Date.now() + 30 * 60 * 1000);
   const [tripType, setTripType] = useState<'DAILY' | 'ONE_TIME'>('DAILY');
   const [from, setFrom] = useState('Panchsheel Greens 2');
   const [route, setRoute] = useState('');
   const [to, setTo] = useState('');
-  const [departAt, setDepartAt] = useState('');
+  const [travelDate, setTravelDate] = useState(toDateInputValue(defaultDeparture));
+  const [travelTime, setTravelTime] = useState(toTimeInputValue(defaultDeparture));
   const [seatsAvailable, setSeatsAvailable] = useState('1');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const onCreate = async () => {
+    const departAtIso = combineDateAndTimeToIso(travelDate, travelTime);
+    if (!departAtIso) {
+      setError('Please choose a valid travel date and time');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -36,7 +47,7 @@ export function TripCreateForm() {
           from,
           route,
           to,
-          departAtIso: new Date(departAt).toISOString(),
+          departAtIso,
           seatsAvailable: Number(seatsAvailable),
           notes,
         }),
@@ -95,12 +106,13 @@ export function TripCreateForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Departure Time</Label>
-          <Input
-            type="datetime-local"
-            value={departAt}
-            onChange={(event) => setDepartAt(event.target.value)}
-          />
+          <Label>Travel Date</Label>
+          <DatePicker value={travelDate} onValueChange={setTravelDate} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Travel Time</Label>
+          <TimePicker value={travelTime} onValueChange={setTravelTime} step={300} />
         </div>
 
         <div className="space-y-2">

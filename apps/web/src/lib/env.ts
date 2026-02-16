@@ -19,7 +19,7 @@ export const env = {
   databaseUrl: process.env.DATABASE_URL ?? '',
   authSecret: process.env.AUTH_SECRET ?? 'replace-me',
   resendApiKey: process.env.RESEND_API_KEY ?? '',
-  emailFrom: process.env.EMAIL_FROM ?? 'Car Pool PG2 <noreply@example.com>',
+  emailFrom: process.env.EMAIL_FROM ?? 'Car Pool Panchsheel Greens 2 <car_admin@akxost.com>',
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '',
   publicGoogleClientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '',
   publicGoogleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
