@@ -252,6 +252,9 @@ export default function LandingPage() {
                 <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
                   Mobile app-like experience
                 </span>
+                <span className="rounded-full border border-primary/20 bg-white px-3 py-1.5">
+                  Terms & safety rules
+                </span>
               </div>
             </div>
 

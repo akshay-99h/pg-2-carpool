@@ -233,7 +233,7 @@ export function LoginForm({
               </Field>
 
               <FieldDescription className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
-                <span>By continuing, you agree to</span>
+                <span>By continuing, you agree to the community</span>
                 <span className="inline-flex items-center gap-1">
                   <FileText className="h-3.5 w-3.5" />
                   Terms & Conditions

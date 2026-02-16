@@ -40,6 +40,9 @@ export function PwaAdaptiveLogin() {
           <p className="mt-2 text-sm text-muted-foreground">
             Residents-only access with Email OTP or Google sign-in.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Terms & Conditions and Safety Rules apply to all resident trips.
+          </p>
           <LoginForm mode="pwa" className="mt-3 pb-4" />
         </section>
       </main>
