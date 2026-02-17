@@ -1,5 +1,5 @@
 import { createTripSchema } from '@/lib/schemas';
-import { TripType } from '@prisma/client';
+import { TripType, type Weekday } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { logAudit } from '@/lib/audit';
@@ -54,6 +54,11 @@ export async function GET(request: Request) {
           profile: true,
         },
       },
+      repeatDays: {
+        select: {
+          day: true,
+        },
+      },
       requests: {
         where: {
           riderId: user.id,
@@ -65,7 +70,12 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ trips });
+  return NextResponse.json({
+    trips: trips.map((trip) => ({
+      ...trip,
+      repeatDays: trip.repeatDays.map((item) => item.day),
+    })),
+  });
 }
 
 export async function POST(request: Request) {
@@ -96,6 +106,7 @@ export async function POST(request: Request) {
     }
 
     const departAt = new Date(parsed.data.departAtIso);
+    const repeatDays = parsed.data.tripType === TripType.DAILY ? parsed.data.repeatDays : [];
     const expiresAt =
       parsed.data.tripType === TripType.ONE_TIME
         ? new Date(Date.now() + ONE_TIME_TRIP_TTL_MS)
@@ -112,6 +123,11 @@ export async function POST(request: Request) {
         seatsAvailable: parsed.data.seatsAvailable,
         notes: parsed.data.notes,
         expiresAt,
+        repeatDays: {
+          create: repeatDays.map((day) => ({
+            day: day as Weekday,
+          })),
+        },
       },
     });
 

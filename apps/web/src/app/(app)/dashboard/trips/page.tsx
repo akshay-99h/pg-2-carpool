@@ -5,11 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
-export default async function TripsPage() {
+export default async function TripsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ posted?: string }>;
+}) {
   const user = await requireApprovedUser();
+  const params = searchParams ? await searchParams : undefined;
+  const posted = params?.posted === '1';
 
   return (
     <div className="space-y-3">
+      {posted ? (
+        <Card className="border-emerald-300 bg-emerald-50">
+          <CardContent className="p-4 text-sm font-medium text-emerald-900">
+            Trip posted successfully.
+          </CardContent>
+        </Card>
+      ) : null}
       <Card className="auth-hero-card">
         <CardContent className="flex items-center justify-between gap-3 p-5">
           <div>

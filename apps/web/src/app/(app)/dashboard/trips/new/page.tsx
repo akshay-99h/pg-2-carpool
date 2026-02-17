@@ -11,7 +11,7 @@ export default async function NewTripPage() {
         <CardContent className="pt-5">
           <p className="text-lg font-semibold">Post a trip</p>
           <p className="text-sm text-muted-foreground">
-            Share your route and seats for daily or one-time rides.
+            Daily rides include repeat days. One-time rides are posted for a single trip.
           </p>
         </CardContent>
       </Card>

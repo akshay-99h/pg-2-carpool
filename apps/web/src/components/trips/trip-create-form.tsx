@@ -19,12 +19,23 @@ import { cn } from '@/lib/utils';
 
 type TripFormField =
   | 'tripType'
+  | 'repeatDays'
   | 'from'
   | 'route'
   | 'to'
   | 'departAtIso'
   | 'seatsAvailable'
   | 'notes';
+
+const repeatDayOptions = [
+  { value: 'MON', label: 'Mon' },
+  { value: 'TUE', label: 'Tue' },
+  { value: 'WED', label: 'Wed' },
+  { value: 'THU', label: 'Thu' },
+  { value: 'FRI', label: 'Fri' },
+  { value: 'SAT', label: 'Sat' },
+  { value: 'SUN', label: 'Sun' },
+] as const;
 
 export function TripCreateForm() {
   const router = useRouter();
@@ -35,6 +46,7 @@ export function TripCreateForm() {
   const [to, setTo] = useState('');
   const [travelDate, setTravelDate] = useState(toDateInputValue(defaultDeparture));
   const [travelTime, setTravelTime] = useState(toTimeInputValue(defaultDeparture));
+  const [repeatDays, setRepeatDays] = useState<string[]>(['MON', 'TUE', 'WED', 'THU', 'FRI']);
   const [seatsAvailable, setSeatsAvailable] = useState('1');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,7 +56,11 @@ export function TripCreateForm() {
   const requiredStar = <span className="ml-1 text-red-600">*</span>;
 
   const onCreate = async () => {
-    const departAtIso = combineDateAndTimeToIso(travelDate, travelTime);
+    const departAtIso =
+      tripType === 'DAILY'
+        ? combineDateAndTimeToIso(toDateInputValue(new Date()), travelTime)
+        : combineDateAndTimeToIso(travelDate, travelTime);
+
     if (!departAtIso) {
       setError('Please choose a valid travel date and time');
       setFieldErrors((previous) => ({ ...previous, departAtIso: 'Travel date/time is required' }));
@@ -53,6 +69,7 @@ export function TripCreateForm() {
 
     const parsed = createTripSchema.safeParse({
       tripType,
+      repeatDays,
       from: from.trim(),
       route: route.trim(),
       to: to.trim(),
@@ -86,7 +103,7 @@ export function TripCreateForm() {
         }),
       });
 
-      router.push('/dashboard/trips');
+      router.push('/dashboard/trips?posted=1');
       router.refresh();
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Failed to create trip');
@@ -100,7 +117,9 @@ export function TripCreateForm() {
       <CardHeader>
         <CardTitle>Post your trip</CardTitle>
         <CardDescription>
-          One-time rides auto-hide after 1 hour. Daily rides remain visible until you cancel.
+          {tripType === 'DAILY'
+            ? 'Daily rides repeat on selected days and stay active until you cancel.'
+            : 'One-time rides auto-hide after 1 hour.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -111,7 +130,15 @@ export function TripCreateForm() {
           </Label>
           <Select
             value={tripType}
-            onChange={(event) => setTripType(event.target.value as 'DAILY' | 'ONE_TIME')}
+            onChange={(event) => {
+              const value = event.target.value as 'DAILY' | 'ONE_TIME';
+              setTripType(value);
+              if (value === 'ONE_TIME') {
+                setRepeatDays([]);
+              } else if (repeatDays.length === 0) {
+                setRepeatDays(['MON', 'TUE', 'WED', 'THU', 'FRI']);
+              }
+            }}
             className={cn(fieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : '')}
           >
             <option value="DAILY">Daily Basis</option>
@@ -121,6 +148,48 @@ export function TripCreateForm() {
             <p className="text-xs text-red-700">{fieldErrors.tripType}</p>
           ) : null}
         </div>
+
+        {tripType === 'DAILY' ? (
+          <div className="space-y-2 md:col-span-2">
+            <Label>
+              Repeat days
+              {requiredStar}
+            </Label>
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+              {repeatDayOptions.map((day) => {
+                const selected = repeatDays.includes(day.value);
+                return (
+                  <button
+                    key={day.value}
+                    type="button"
+                    onClick={() =>
+                      setRepeatDays((current) =>
+                        current.includes(day.value)
+                          ? current.filter((item) => item !== day.value)
+                          : [...current, day.value]
+                      )
+                    }
+                    className={cn(
+                      'rounded-lg border px-2 py-2 text-xs font-semibold transition',
+                      selected
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-white text-muted-foreground hover:bg-accent',
+                      fieldErrors.repeatDays ? 'border-red-400' : ''
+                    )}
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Repeat rides are visible only on selected weekdays.
+            </p>
+            {fieldErrors.repeatDays ? (
+              <p className="text-xs text-red-700">{fieldErrors.repeatDays}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <Label>
@@ -173,21 +242,30 @@ export function TripCreateForm() {
           {fieldErrors.route ? <p className="text-xs text-red-700">{fieldErrors.route}</p> : null}
         </div>
 
-        <div className="space-y-2">
-          <Label>
-            Travel Date
-            {requiredStar}
-          </Label>
-          <DatePicker
-            value={travelDate}
-            onValueChange={setTravelDate}
-            className={cn(fieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : '')}
-          />
-        </div>
+        {tripType === 'ONE_TIME' ? (
+          <div className="space-y-2">
+            <Label>
+              Travel Date
+              {requiredStar}
+            </Label>
+            <DatePicker
+              value={travelDate}
+              onValueChange={setTravelDate}
+              className={cn(fieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : '')}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label>Daily schedule</Label>
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary">
+              This ride starts from today and repeats on selected days.
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label>
-            Travel Time
+            {tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}
             {requiredStar}
           </Label>
           <TimePicker

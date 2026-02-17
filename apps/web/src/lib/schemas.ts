@@ -30,16 +30,29 @@ export const emailOtpVerifySchema = z.object({
 });
 
 export const tripTypeSchema = z.enum(['DAILY', 'ONE_TIME']);
+export const tripRepeatDaySchema = z.enum(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']);
+export type TripRepeatDay = z.infer<typeof tripRepeatDaySchema>;
 
-export const createTripSchema = z.object({
-  tripType: tripTypeSchema,
-  from: z.string().min(2).max(120),
-  route: z.string().min(2).max(200),
-  to: z.string().min(2).max(120),
-  departAtIso: z.string().datetime(),
-  seatsAvailable: z.number().int().min(1).max(7),
-  notes: z.string().max(240).optional(),
-});
+export const createTripSchema = z
+  .object({
+    tripType: tripTypeSchema,
+    repeatDays: z.array(tripRepeatDaySchema).optional().default([]),
+    from: z.string().min(2).max(120),
+    route: z.string().min(2).max(200),
+    to: z.string().min(2).max(120),
+    departAtIso: z.string().datetime(),
+    seatsAvailable: z.number().int().min(1).max(7),
+    notes: z.string().max(240).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.tripType === 'DAILY' && data.repeatDays.length === 0) {
+      ctx.addIssue({
+        path: ['repeatDays'],
+        code: z.ZodIssueCode.custom,
+        message: 'Select at least one repeat day for daily rides',
+      });
+    }
+  });
 
 export const poolRequestSchema = z.object({
   from: z.string().min(2).max(120),

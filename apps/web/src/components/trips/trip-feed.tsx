@@ -28,9 +28,20 @@ import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+const repeatDayLabel: Record<string, string> = {
+  MON: 'Mon',
+  TUE: 'Tue',
+  WED: 'Wed',
+  THU: 'Thu',
+  FRI: 'Fri',
+  SAT: 'Sat',
+  SUN: 'Sun',
+};
+
 type Trip = {
   id: string;
   tripType: 'DAILY' | 'ONE_TIME';
+  repeatDays: string[];
   fromLocation: string;
   route: string;
   toLocation: string;
@@ -271,6 +282,11 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
           const request = trip.requests[0];
           const seatsLeft = Math.max(0, trip.seatsAvailable - trip.seatsBooked);
 
+          const repeatLabel =
+            trip.tripType === 'DAILY' && trip.repeatDays.length > 0
+              ? trip.repeatDays.map((day) => repeatDayLabel[day] ?? day).join(', ')
+              : 'Daily';
+
           return (
             <Card
               key={trip.id}
@@ -284,7 +300,9 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                         {trip.tripType === 'ONE_TIME' ? 'One Time' : 'Daily'}
                       </Badge>
                       <span className="text-xs font-medium text-muted-foreground">
-                        {formatDateTime(trip.departAt)}
+                        {trip.tripType === 'ONE_TIME'
+                          ? formatDateTime(trip.departAt)
+                          : `Repeats: ${repeatLabel}`}
                       </span>
                     </div>
                     <p className="text-lg font-semibold leading-tight">
