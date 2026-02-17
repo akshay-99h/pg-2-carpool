@@ -1,4 +1,4 @@
-import { ApprovalStatus, UserRole } from '@prisma/client';
+import { ApprovalStatus, Prisma, UserRole } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
@@ -22,16 +22,28 @@ export async function getOrCreateUserFromEmail(email: string) {
     where: { email: normalizedEmail },
   });
 
-  return db.user.create({
-    data: {
-      email: normalizedEmail,
-      role: invite || shouldBootstrapAdmin(normalizedEmail) ? UserRole.ADMIN : UserRole.USER,
-      approvalStatus:
-        invite || shouldBootstrapAdmin(normalizedEmail)
-          ? ApprovalStatus.APPROVED
-          : ApprovalStatus.PENDING,
-    },
-  });
+  try {
+    return await db.user.create({
+      data: {
+        email: normalizedEmail,
+        role: invite || shouldBootstrapAdmin(normalizedEmail) ? UserRole.ADMIN : UserRole.USER,
+        approvalStatus:
+          invite || shouldBootstrapAdmin(normalizedEmail)
+            ? ApprovalStatus.APPROVED
+            : ApprovalStatus.PENDING,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const recovered = await db.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (recovered) {
+        return recovered;
+      }
+    }
+    throw error;
+  }
 }
 
 export async function getOrCreateUserFromGoogle({
@@ -63,15 +75,36 @@ export async function getOrCreateUserFromGoogle({
     where: { email: normalizedEmail },
   });
 
-  return db.user.create({
-    data: {
-      email: normalizedEmail,
-      googleSub: sub,
-      role: invite || shouldBootstrapAdmin(normalizedEmail) ? UserRole.ADMIN : UserRole.USER,
-      approvalStatus:
-        invite || shouldBootstrapAdmin(normalizedEmail)
-          ? ApprovalStatus.APPROVED
-          : ApprovalStatus.PENDING,
-    },
-  });
+  try {
+    return await db.user.create({
+      data: {
+        email: normalizedEmail,
+        googleSub: sub,
+        role: invite || shouldBootstrapAdmin(normalizedEmail) ? UserRole.ADMIN : UserRole.USER,
+        approvalStatus:
+          invite || shouldBootstrapAdmin(normalizedEmail)
+            ? ApprovalStatus.APPROVED
+            : ApprovalStatus.PENDING,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const recovered = await db.user.findFirst({
+        where: {
+          OR: [{ email: normalizedEmail }, { googleSub: sub }],
+        },
+      });
+
+      if (recovered) {
+        return db.user.update({
+          where: { id: recovered.id },
+          data: {
+            email: normalizedEmail,
+            googleSub: sub,
+          },
+        });
+      }
+    }
+    throw error;
+  }
 }

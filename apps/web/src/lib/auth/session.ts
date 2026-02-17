@@ -98,7 +98,9 @@ export async function requireAdmin() {
 }
 
 export function unauthorized() {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  clearSessionCookie(response);
+  return response;
 }
 
 export function forbidden(message = 'Forbidden') {
