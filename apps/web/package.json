@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "prisma generate && next build --webpack",
-    "vercel-build": "prisma generate && prisma db push && tsx prisma/seed.ts && next build --webpack",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build --webpack",
     "start": "next start",
     "lint": "biome check src prisma next.config.ts tailwind.config.ts",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"

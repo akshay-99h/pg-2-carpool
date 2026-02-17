@@ -66,6 +66,8 @@ export const contactSchema = z.object({
   name: z.string().min(2).max(80),
   mobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
   message: z.string().min(10).max(500),
+  website: z.string().max(200).optional().or(z.literal('')),
+  captcha: z.string().trim().min(4).max(32),
 });
 
 export const userAdminUpdateSchema = z.object({

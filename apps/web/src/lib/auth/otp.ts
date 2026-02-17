@@ -131,7 +131,7 @@ export async function sendOtpEmail(email: string, otp: string) {
     if (isProduction) {
       throw new Error('OTP_EMAIL_PROVIDER_NOT_CONFIGURED');
     }
-    console.info(`OTP for ${email}: ${otp}`);
+    console.info('OTP generated in local fallback mode');
     return { provider: 'console' as const };
   }
 
@@ -151,13 +151,12 @@ export async function sendOtpEmail(email: string, otp: string) {
     console.error('OTP email provider error', {
       name: error.name,
       message: error.message,
-      to: email,
     });
     throw new Error('OTP_EMAIL_SEND_FAILED');
   }
 
   if (!data?.id) {
-    console.error('OTP email send response missing id', { to: email });
+    console.error('OTP email send response missing id');
     throw new Error('OTP_EMAIL_SEND_FAILED');
   }
 

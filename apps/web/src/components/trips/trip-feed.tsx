@@ -59,16 +59,26 @@ type Trip = {
   requests: Array<{ id: string; status: 'PENDING' | 'CONFIRMED' | 'REJECTED' }>;
 };
 
+type Pagination = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
 export function TripFeed({ currentUserId }: { currentUserId: string }) {
   const [query, setQuery] = useState('');
+  const [activeQuery, setActiveQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [fromLocation, setFromLocation] = useState('Panchsheel Greens 2');
   const [travelDate, setTravelDate] = useState('');
   const [travelTime, setTravelTime] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
 
-  const loadTrips = useCallback(async (search = '') => {
+  const loadTrips = useCallback(async (search = '', targetPage = 1) => {
     setLoading(true);
     setError('');
 
@@ -77,8 +87,14 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
       if (search) {
         params.set('q', search);
       }
-      const response = await apiFetch<{ trips: Trip[] }>(`/api/trips?${params.toString()}`);
+      params.set('page', String(targetPage));
+      params.set('pageSize', '20');
+
+      const response = await apiFetch<{ trips: Trip[]; pagination: Pagination }>(
+        `/api/trips?${params.toString()}`
+      );
       setTrips(response.trips);
+      setPagination(response.pagination);
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Unable to fetch trips');
     } finally {
@@ -87,8 +103,8 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
   }, []);
 
   useEffect(() => {
-    void loadTrips();
-  }, [loadTrips]);
+    void loadTrips(activeQuery, page);
+  }, [activeQuery, loadTrips, page]);
 
   const filteredTrips = useMemo(() => {
     const fromFilter = fromLocation.trim().toLowerCase();
@@ -150,7 +166,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
   const requestSeat = async (tripId: string) => {
     try {
       await apiFetch(`/api/trips/${tripId}/request`, { method: 'POST' });
-      await loadTrips(query);
+      await loadTrips(activeQuery, page);
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Could not request seat');
     }
@@ -235,7 +251,14 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => loadTrips(query)}>Find Car Pool Rides</Button>
+            <Button
+              onClick={() => {
+                setPage(1);
+                setActiveQuery(query.trim());
+              }}
+            >
+              Find Car Pool Rides
+            </Button>
             <Button variant="outline" onClick={applyNowFilters}>
               Leave Now
             </Button>
@@ -253,7 +276,8 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                   className="rounded-full border border-border bg-accent/45 px-3 py-1 text-xs font-medium text-foreground hover:bg-accent"
                   onClick={() => {
                     setQuery(destination);
-                    void loadTrips(destination);
+                    setPage(1);
+                    setActiveQuery(destination);
                   }}
                 >
                   {destination}
@@ -274,6 +298,34 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
             <p>Try another destination or clear your date/time filters.</p>
           </CardContent>
         </Card>
+      ) : null}
+
+      {pagination ? (
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <p>
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total} rides)
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPage((previous) => Math.max(1, previous - 1))}
+              disabled={loading || pagination.page <= 1}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPage((previous) => Math.min(pagination.totalPages, previous + 1))}
+              disabled={loading || pagination.page >= pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       ) : null}
 
       <div className="grid gap-3 xl:grid-cols-2">

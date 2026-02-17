@@ -35,10 +35,9 @@ export async function POST(request: Request) {
     tokenId = created.tokenId;
     const delivery = await sendOtpEmail(parsed.data.email, created.otp);
     console.info('otp delivery queued', {
-      email: parsed.data.email.toLowerCase(),
       provider: delivery.provider,
       messageId: 'id' in delivery ? delivery.id : null,
-      tokenId,
+      hasToken: Boolean(tokenId),
     });
 
     return NextResponse.json({ ok: true });

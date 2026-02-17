@@ -10,7 +10,18 @@ const deleteSchema = z.object({
   userId: z.string().uuid(),
 });
 
-export async function GET() {
+function parsePositiveInteger(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+}
+
+const USERS_PAGE_SIZE_DEFAULT = 25;
+const USERS_PAGE_SIZE_MAX = 100;
+
+export async function GET(request: Request) {
   const admin = await getCurrentUser();
   if (!admin) {
     return unauthorized();
@@ -19,14 +30,47 @@ export async function GET() {
     return forbidden('Admin only');
   }
 
-  const users = await db.user.findMany({
-    include: {
-      profile: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get('q')?.trim() || '';
+  const page = parsePositiveInteger(searchParams.get('page'), 1);
+  const pageSize = Math.min(
+    parsePositiveInteger(searchParams.get('pageSize'), USERS_PAGE_SIZE_DEFAULT),
+    USERS_PAGE_SIZE_MAX
+  );
+  const skip = (page - 1) * pageSize;
 
-  return NextResponse.json({ users });
+  const where = q
+    ? {
+        OR: [
+          { email: { contains: q, mode: 'insensitive' as const } },
+          { profile: { is: { name: { contains: q, mode: 'insensitive' as const } } } },
+          { profile: { is: { towerFlat: { contains: q, mode: 'insensitive' as const } } } },
+        ],
+      }
+    : undefined;
+
+  const [users, total] = await Promise.all([
+    db.user.findMany({
+      where,
+      include: {
+        profile: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: pageSize,
+    }),
+    db.user.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    users,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+  });
 }
 
 export async function PATCH(request: Request) {

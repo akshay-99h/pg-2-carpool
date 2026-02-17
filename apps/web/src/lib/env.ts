@@ -24,6 +24,7 @@ export const env = {
   publicGoogleClientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '',
   publicGoogleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+  contactCaptchaPhrase: process.env.CONTACT_CAPTCHA_PHRASE ?? 'PG2SAFE',
   bootstrapAdminEmails: (process.env.ADMIN_BOOTSTRAP_EMAILS ?? '')
     .split(',')
     .map((email) => email.trim().toLowerCase())

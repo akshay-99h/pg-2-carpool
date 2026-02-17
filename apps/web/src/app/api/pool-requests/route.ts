@@ -10,6 +10,9 @@ export async function GET() {
   if (!user) {
     return unauthorized();
   }
+  if (user.approvalStatus !== 'APPROVED') {
+    return forbidden('Account approval pending');
+  }
 
   const poolRequests = await db.poolRequest.findMany({
     orderBy: { travelAt: 'asc' },

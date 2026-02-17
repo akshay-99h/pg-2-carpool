@@ -6,6 +6,18 @@ import { logAudit } from '@/lib/audit';
 import { forbidden, getCurrentUser, unauthorized } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 
+class NoSeatsAvailableError extends Error {
+  constructor() {
+    super('No seats available');
+  }
+}
+
+class TripRequestNotFoundError extends Error {
+  constructor() {
+    super('Not found');
+  }
+}
+
 const schema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'REJECTED']).optional(),
   note: z.string().max(240).optional(),
@@ -56,15 +68,43 @@ export async function PATCH(
         return forbidden('Only car owner/admin can update request status');
       }
 
-      if (
-        parsed.data.status === TripRequestStatus.CONFIRMED &&
-        existing.status !== TripRequestStatus.CONFIRMED &&
-        existing.trip.seatsBooked >= existing.trip.seatsAvailable
-      ) {
-        return NextResponse.json({ error: 'No seats available' }, { status: 400 });
-      }
-
       const updated = await db.$transaction(async (tx) => {
+        const currentRequest = await tx.tripRequest.findUnique({
+          where: { id: requestId },
+          select: {
+            id: true,
+            status: true,
+            tripId: true,
+          },
+        });
+
+        if (!currentRequest) {
+          throw new TripRequestNotFoundError();
+        }
+
+        const shouldIncrementSeats =
+          parsed.data.status === TripRequestStatus.CONFIRMED &&
+          currentRequest.status !== TripRequestStatus.CONFIRMED;
+        const shouldDecrementSeats =
+          currentRequest.status === TripRequestStatus.CONFIRMED &&
+          parsed.data.status !== TripRequestStatus.CONFIRMED;
+
+        if (shouldIncrementSeats) {
+          // Lock trip row to avoid concurrent seat confirmation overbooking.
+          await tx.$queryRaw`SELECT id FROM "Trip" WHERE id = ${currentRequest.tripId} FOR UPDATE`;
+          const lockedTrip = await tx.trip.findUnique({
+            where: { id: currentRequest.tripId },
+            select: {
+              seatsBooked: true,
+              seatsAvailable: true,
+            },
+          });
+
+          if (!lockedTrip || lockedTrip.seatsBooked >= lockedTrip.seatsAvailable) {
+            throw new NoSeatsAvailableError();
+          }
+        }
+
         const updatedRequest = await tx.tripRequest.update({
           where: { id: requestId },
           data: {
@@ -72,12 +112,9 @@ export async function PATCH(
           },
         });
 
-        if (
-          parsed.data.status === TripRequestStatus.CONFIRMED &&
-          existing.status !== TripRequestStatus.CONFIRMED
-        ) {
+        if (shouldIncrementSeats) {
           await tx.trip.update({
-            where: { id: existing.tripId },
+            where: { id: currentRequest.tripId },
             data: {
               seatsBooked: {
                 increment: 1,
@@ -86,13 +123,14 @@ export async function PATCH(
           });
         }
 
-        if (
-          existing.status === TripRequestStatus.CONFIRMED &&
-          parsed.data.status !== TripRequestStatus.CONFIRMED &&
-          existing.trip.seatsBooked > 0
-        ) {
-          await tx.trip.update({
-            where: { id: existing.tripId },
+        if (shouldDecrementSeats) {
+          await tx.trip.updateMany({
+            where: {
+              id: currentRequest.tripId,
+              seatsBooked: {
+                gt: 0,
+              },
+            },
             data: {
               seatsBooked: {
                 decrement: 1,
@@ -142,6 +180,12 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, request: updated });
   } catch (error) {
+    if (error instanceof NoSeatsAvailableError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof TripRequestNotFoundError) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
     console.error(error);
     return NextResponse.json({ error: 'Failed to update request' }, { status: 500 });
   }

@@ -21,6 +21,8 @@ export function ContactForm({
   const [name, setName] = useState(initial?.name ?? '');
   const [mobile, setMobile] = useState(initial?.mobile ?? '');
   const [message, setMessage] = useState('');
+  const [website, setWebsite] = useState('');
+  const [captcha, setCaptcha] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -31,9 +33,11 @@ export function ContactForm({
     try {
       await apiFetch('/api/contact', {
         method: 'POST',
-        body: JSON.stringify({ name, mobile, message }),
+        body: JSON.stringify({ name, mobile, message, website, captcha }),
       });
       setMessage('');
+      setCaptcha('');
+      setWebsite('');
       setStatus('Query submitted. Admin will contact you soon.');
     } catch (errorValue) {
       setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to submit query');
@@ -65,8 +69,29 @@ export function ContactForm({
           <Label>Message</Label>
           <Textarea value={message} onChange={(event) => setMessage(event.target.value)} />
         </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label>Verification</Label>
+          <Input
+            value={captcha}
+            onChange={(event) => setCaptcha(event.target.value)}
+            placeholder="Type PG2SAFE"
+          />
+          <p className="text-xs text-muted-foreground">Enter PG2SAFE to confirm you are human.</p>
+        </div>
+        <Input
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(event) => setWebsite(event.target.value)}
+          className="hidden"
+          aria-hidden
+        />
         {status ? <p className="text-sm text-muted-foreground md:col-span-2">{status}</p> : null}
-        <Button className="w-full md:col-span-2" onClick={onSubmit} disabled={loading}>
+        <Button
+          className="w-full md:col-span-2"
+          onClick={onSubmit}
+          disabled={loading || !name || !mobile || !message || !captcha}
+        >
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Submit query
         </Button>
