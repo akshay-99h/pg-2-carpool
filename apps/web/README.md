@@ -26,6 +26,13 @@ This Next.js app is standalone-deployable.
 `vercel-build` runs Prisma generate + migration deploy before building.
 Run seed manually only when needed (`pnpm db:seed`).
 
+If your production database already existed before Prisma migrations were added,
+run this one-time baseline command before the next deploy:
+
+```bash
+DATABASE_URL="<production_database_url>" pnpm --filter @carpool/web exec prisma migrate resolve --applied 20260217202000_baseline
+```
+
 ## Local Run
 ```bash
 pnpm install
