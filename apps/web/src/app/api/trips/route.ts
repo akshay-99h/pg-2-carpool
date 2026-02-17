@@ -83,7 +83,16 @@ export async function POST(request: Request) {
     const parsed = createTripSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+      const firstIssue = parsed.error.issues[0];
+      const field =
+        typeof firstIssue?.path?.[0] === 'string' ? (firstIssue.path[0] as string) : undefined;
+      return NextResponse.json(
+        {
+          error: firstIssue?.message ?? 'Invalid trip data',
+          field,
+        },
+        { status: 400 }
+      );
     }
 
     const departAt = new Date(parsed.data.departAtIso);

@@ -37,6 +37,7 @@ type OutgoingRequest = {
     driver: {
       profile?: {
         name: string;
+        mobileNumber: string;
       } | null;
     };
   };
@@ -227,6 +228,19 @@ export function BookingManager() {
                 <p className="mt-1 text-muted-foreground">
                   Car owner: {item.trip.driver.profile?.name ?? 'Resident'}
                 </p>
+                {item.status === 'CONFIRMED' && item.trip.driver.profile?.mobileNumber ? (
+                  <div className="mt-2">
+                    <Button asChild size="sm" className="w-full">
+                      <a
+                        href={`https://wa.me/91${item.trip.driver.profile.mobileNumber}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Chat with OP
+                      </a>
+                    </Button>
+                  </div>
+                ) : null}
                 <div className="mt-3 space-y-2">
                   <Input
                     value={noteDrafts[item.id] ?? ''}
