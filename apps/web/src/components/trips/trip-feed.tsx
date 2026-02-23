@@ -354,7 +354,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                       <span className="text-xs font-medium text-muted-foreground">
                         {trip.tripType === 'ONE_TIME'
                           ? formatDateTime(trip.departAt)
-                          : `Repeats: ${repeatLabel}`}
+                          : `Repeats: ${repeatLabel} at ${new Date(trip.departAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     </div>
                     <p className="text-lg font-semibold leading-tight">

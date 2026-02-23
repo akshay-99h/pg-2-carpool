@@ -103,7 +103,8 @@ export function TripCreateForm() {
         }),
       });
 
-      router.push('/dashboard/trips?posted=1');
+      // Use replace instead of push to avoid navigation stack issues in PWA/mobile
+      router.replace('/dashboard/trips?posted=1');
       router.refresh();
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Failed to create trip');
