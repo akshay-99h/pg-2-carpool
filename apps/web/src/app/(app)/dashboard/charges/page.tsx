@@ -14,11 +14,11 @@ export default async function ChargesPage() {
   return (
     <Card className="auth-hero-card">
       <CardHeader>
-        <CardTitle>Charges List</CardTitle>
+        <CardTitle>Shared Expenses</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {charges.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No charge list available.</p>
+          <p className="text-sm text-muted-foreground">No shared expenses available.</p>
         ) : null}
         {charges.map((charge) => (
           <div key={charge.id} className="auth-tile p-3">

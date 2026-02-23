@@ -24,10 +24,10 @@ export const userNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/dashboard/trips', label: 'Trips', icon: CarTaxiFront },
   { href: '/dashboard/map', label: 'Route Map', icon: Route },
-  { href: '/dashboard/charges', label: 'Charges', icon: WalletCards },
+  { href: '/dashboard/charges', label: 'Shared Expenses', icon: WalletCards },
   { href: '/dashboard/profile', label: 'Profile', icon: CircleUserRound },
   { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
-  { href: '/dashboard/terms', label: 'Terms', icon: FileText },
+  { href: '/dashboard/terms', label: 'Terms and Conditions', icon: FileText },
 ];
 
 export const mobilePrimaryNavItems: NavItem[] = [
@@ -46,7 +46,7 @@ export const mobileMoreNavItems: NavItem[] = [
   },
   {
     href: '/dashboard/charges',
-    label: 'Charges',
+    label: 'Shared Expenses',
     icon: WalletCards,
     description: 'Check route-wise contribution guidance',
   },
@@ -58,7 +58,7 @@ export const mobileMoreNavItems: NavItem[] = [
   },
   {
     href: '/dashboard/terms',
-    label: 'Terms',
+    label: 'Terms and Conditions',
     icon: FileText,
     description: 'Read safety and compliance policies',
   },

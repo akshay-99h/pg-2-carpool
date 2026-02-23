@@ -236,7 +236,7 @@ export function LoginForm({
                 <span>By continuing, you agree to the community</span>
                 <span className="inline-flex items-center gap-1">
                   <FileText className="h-3.5 w-3.5" />
-                  Terms & Conditions
+                  Terms and Conditions
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
