@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pg2-carpool-v2';
+const CACHE_NAME = 'pg2-carpool-v3';
 const ASSETS = [
   '/',
   '/login',
@@ -58,4 +58,10 @@ self.addEventListener('fetch', (event) => {
         .catch(() => caches.match('/'));
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

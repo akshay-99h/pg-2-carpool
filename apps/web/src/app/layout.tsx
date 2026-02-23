@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
+import { PwaUpdateBanner } from '@/components/pwa-update-banner';
 import { QueryProvider } from '@/components/providers/query-provider';
 
 import './globals.css';
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
         <QueryProvider>{children}</QueryProvider>
+        <PwaUpdateBanner />
         <Script id="sw-register" strategy="afterInteractive">
           {`if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {})); }`}
         </Script>
