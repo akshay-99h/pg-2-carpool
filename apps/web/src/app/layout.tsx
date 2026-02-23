@@ -1,10 +1,24 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
+import type { ReactNode } from 'react';
 
 import { PwaUpdateBanner } from '@/components/pwa-update-banner';
 import { QueryProvider } from '@/components/providers/query-provider';
 
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-merriweather',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -32,10 +46,12 @@ export const viewport: Viewport = {
   themeColor: [{ media: '(prefers-color-scheme: light)', color: '#207946' }],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body
+        className={`${inter.variable} ${plusJakartaSans.variable} bg-background font-body text-foreground antialiased`}
+      >
         <QueryProvider>{children}</QueryProvider>
         <PwaUpdateBanner />
         <Script id="sw-register" strategy="afterInteractive">

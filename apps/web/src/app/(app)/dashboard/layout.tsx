@@ -11,59 +11,70 @@ import { requireProfileCompletion } from '@/server/auth-guards';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await requireProfileCompletion();
+  const userName = user.profile?.name ?? user.email ?? 'Resident';
+  const towerFlat = user.profile?.towerFlat ?? null;
+  const role = user.role ?? 'USER';
+  const approvalStatus = user.approvalStatus ?? 'PENDING';
 
   return (
-    <MobileShell className="auth-aesthetic">
-      <header className="app-surface rounded-2xl p-4 md:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <AppLogo compact />
-          <div className="space-y-2 text-right md:flex md:items-center md:gap-2 md:space-y-0">
-            <Badge
-              variant={user.role === 'ADMIN' ? 'secondary' : 'default'}
-              className="status-pill justify-center px-2.5 py-1"
-            >
-              {user.role}
-            </Badge>
-            <div className="hidden md:block">
-              <LogoutButton />
-            </div>
-          </div>
-        </div>
+    <MobileShell>
+      <header className="surface-raised sticky top-2 z-40 rounded-2xl px-3 py-2.5 md:hidden">
+        <div className="flex items-center justify-between gap-2 md:gap-3">
+          <AppLogo compact className="shrink-0" />
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4 text-sm">
-          <div>
-            <p className="font-medium text-foreground">{user.profile?.name ?? user.email}</p>
-            <p className="text-xs text-muted-foreground">
-              Tower/Flat: {user.profile?.towerFlat ?? 'Not set'}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {user.approvalStatus !== 'APPROVED' ? (
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <Badge
+              variant={role === 'ADMIN' ? 'secondary' : 'outline'}
+              className="status-chip px-2.5 py-1"
+            >
+              {role}
+            </Badge>
+            {approvalStatus !== 'APPROVED' ? (
               <Link
                 href="/approval-pending"
-                className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900"
+                className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-amber-900"
               >
-                Approval Awaited
+                Pending
               </Link>
             ) : null}
-            {user.role === 'ADMIN' ? (
+            {role === 'ADMIN' ? (
               <Link
                 href="/admin"
-                className="rounded-full border border-secondary/20 bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary"
+                className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-primary"
               >
-                Open Admin Portal
+                Admin
               </Link>
             ) : null}
-            <div className="md:hidden">
+            <div className="shrink-0">
               <LogoutButton />
             </div>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-[225px_1fr] md:items-start">
-        <DesktopNavRail />
-        <div className="space-y-4 md:space-y-5">{children}</div>
+      <section className="grid gap-4 md:grid-cols-[280px_1fr] md:items-start">
+        <DesktopNavRail
+          userName={userName}
+          towerFlat={towerFlat}
+          role={role}
+          approvalStatus={approvalStatus}
+        />
+        <div className="space-y-4 md:space-y-5">
+          <div className="surface-raised hidden items-center justify-between gap-3 rounded-2xl px-4 py-3 md:flex">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">{userName}</p>
+              <p className="text-xs text-muted-foreground">
+                Tower/Flat: {towerFlat ?? 'Not set'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={role === 'ADMIN' ? 'secondary' : 'outline'}>{role}</Badge>
+              {approvalStatus !== 'APPROVED' ? <Badge variant="warning">Pending</Badge> : null}
+              <LogoutButton />
+            </div>
+          </div>
+          {children}
+        </div>
       </section>
 
       <BottomNav />

@@ -3,25 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --font-poppins: "Avenir Next", "SF Pro Text", "Segoe UI", "Trebuchet MS", sans-serif;
-  --font-merriweather: "Avenir Next", "SF Pro Text", "Segoe UI", "Trebuchet MS", sans-serif;
-  --background: 42 30% 97%;
-  --foreground: 154 16% 14%;
+  --font-poppins: "Inter", "Segoe UI", "SF Pro Text", sans-serif;
+  --font-merriweather: "Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif;
+  --background: 210 20% 98%;
+  --foreground: 154 20% 14%;
   --card: 0 0% 100%;
-  --card-foreground: 154 16% 14%;
-  --primary: 146 58% 30%;
+  --card-foreground: 154 20% 14%;
+  --primary: 152 55% 28%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 349 30% 32%;
+  --secondary: 210 13% 38%;
   --secondary-foreground: 0 0% 100%;
-  --accent: 40 24% 93%;
-  --accent-foreground: 154 16% 14%;
-  --muted: 41 20% 95%;
-  --muted-foreground: 154 8% 39%;
-  --border: 43 14% 84%;
-  --input: 43 14% 84%;
-  --ring: 146 58% 30%;
+  --accent: 210 28% 96%;
+  --accent-foreground: 154 20% 14%;
+  --muted: 210 24% 95%;
+  --muted-foreground: 210 10% 42%;
+  --border: 210 16% 86%;
+  --input: 210 16% 84%;
+  --ring: 152 55% 28%;
   --destructive: 354 72% 52%;
   --destructive-foreground: 0 0% 100%;
+  --surface-card: 0 0% 100%;
+  --surface-raised: 0 0% 100%;
+  --surface-inset: 210 24% 96%;
 }
 
 * {
@@ -35,9 +38,7 @@ body {
 
 body {
   color: hsl(var(--foreground));
-  background: radial-gradient(115% 75% at 0% -10%, hsl(var(--primary) / 0.16) 0%, transparent 48%),
-    radial-gradient(95% 68% at 100% -20%, hsl(var(--secondary) / 0.14) 0%, transparent 44%),
-    linear-gradient(180deg, hsl(var(--background)) 0%, hsl(36 48% 94%) 100%);
+  background: hsl(var(--background));
   font-family: var(--font-poppins), sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -56,14 +57,62 @@ body {
   h5,
   h6 {
     font-family: var(--font-merriweather), sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
 }
 
 @layer components {
-  .app-surface {
-    border-bottom: 1px solid hsl(var(--border));
-    background: transparent;
+  .surface-card {
+    border: 1px solid hsl(var(--border) / 0.8);
+    border-radius: 1rem;
+    background: hsl(var(--surface-card));
+    box-shadow: 0 8px 20px -24px rgba(10, 28, 23, 0.45);
+  }
+
+  .surface-raised {
+    border: 1px solid hsl(var(--border) / 0.78);
+    border-radius: 1rem;
+    background: hsl(var(--surface-raised));
+    box-shadow: 0 18px 36px -30px rgba(11, 31, 28, 0.26);
+  }
+
+  .surface-inset {
+    border: 1px solid hsl(var(--border) / 0.75);
+    border-radius: 1rem;
+    background: hsl(var(--surface-inset));
+  }
+
+  .nav-item {
+    border: 1px solid transparent;
+    border-radius: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.625rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .nav-item:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--foreground));
+  }
+
+  .nav-item-active {
+    background: hsl(var(--primary) / 0.14);
+    color: hsl(var(--primary));
+  }
+
+  .status-chip {
+    border: 1px solid hsl(var(--border) / 0.85);
+    border-radius: 9999px;
+    background: hsl(var(--surface-raised));
+    color: hsl(var(--muted-foreground));
   }
 
   .brand-dot {
@@ -73,131 +122,69 @@ body {
     background: hsl(var(--primary));
   }
 
+  .app-surface {
+    border: 1px solid hsl(var(--border) / 0.78);
+    background: hsl(var(--surface-raised));
+    box-shadow: 0 16px 32px -30px rgba(11, 31, 28, 0.24);
+  }
+
   .status-pill {
-    border: 1px solid hsl(var(--border));
-    background: transparent;
-  }
-
-  .acet-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 1rem;
-    padding: 1px;
-    background: linear-gradient(
-      132deg,
-      hsl(var(--primary) / 0.35),
-      hsl(var(--border) / 0.95),
-      hsl(var(--secondary) / 0.25)
-    );
-  }
-
-  .acet-card::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: -42%;
-    background: radial-gradient(circle at center, hsl(var(--primary) / 0.2), transparent 58%);
-    animation: acet-aurora 10s ease-in-out infinite;
-    opacity: 0.8;
-  }
-
-  .acet-card-inner {
-    position: relative;
-    border-radius: calc(1rem - 1px);
-    background: rgba(255, 255, 255, 0.84);
-    backdrop-filter: blur(12px);
-  }
-
-  .acet-grid {
-    background-image: linear-gradient(to right, hsl(var(--border) / 0.32) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border) / 0.32) 1px, transparent 1px);
-    background-size: 34px 34px;
-  }
-
-  .hero-dot-pattern {
-    background-image: radial-gradient(hsl(var(--primary) / 0.2) 1px, transparent 1px);
-    background-size: 18px 18px;
+    border: 1px solid hsl(var(--border) / 0.85);
+    background: hsl(var(--surface-raised));
   }
 
   .auth-aesthetic .app-surface {
-    border: 1px solid hsl(var(--primary) / 0.18);
-    border-radius: 1.35rem;
-    background: linear-gradient(
-      145deg,
-      hsl(var(--card) / 0.95) 0%,
-      hsl(var(--background) / 0.94) 58%,
-      hsl(var(--card) / 0.98) 100%
-    );
-    box-shadow: 0 20px 44px -34px rgba(14, 72, 55, 0.45);
+    border-color: hsl(var(--border) / 0.72);
+    background: hsl(var(--surface-raised));
+    box-shadow: 0 18px 34px -28px rgba(11, 31, 28, 0.24);
   }
 
   .card-surface {
-    border-radius: 1.35rem;
-    border: 1px solid hsl(var(--border) / 0.9);
-    background: hsl(var(--card));
-    box-shadow: 0 12px 24px -26px rgba(18, 39, 36, 0.3);
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--border) / 0.8);
+    background: hsl(var(--surface-card));
+    box-shadow: 0 8px 20px -24px rgba(10, 28, 23, 0.45);
   }
 
   .auth-aesthetic .card-surface {
-    position: relative;
-    overflow: hidden;
-    border-color: hsl(var(--primary) / 0.16);
-    background: linear-gradient(
-      140deg,
-      hsl(var(--card) / 0.98) 0%,
-      hsl(44 46% 98% / 0.9) 48%,
-      hsl(var(--card) / 0.96) 100%
-    );
-    box-shadow: 0 24px 48px -34px rgba(13, 79, 59, 0.42);
-  }
-
-  .auth-aesthetic .card-surface::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(var(--primary) / 0.26) 18%,
-      hsl(var(--secondary) / 0.24) 52%,
-      hsl(var(--primary) / 0.24) 84%,
-      transparent 100%
-    );
+    border-color: hsl(var(--border) / 0.72);
+    background: hsl(var(--surface-card));
+    box-shadow: 0 18px 34px -30px rgba(11, 31, 28, 0.22);
   }
 
   .auth-aesthetic .auth-hero-card {
-    border-color: hsl(var(--primary) / 0.2);
-    background: linear-gradient(
-      120deg,
-      hsl(var(--primary) / 0.12) 0%,
-      hsl(var(--card) / 0.96) 36%,
-      hsl(var(--card) / 0.94) 100%
-    );
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-card));
+    box-shadow: 0 18px 34px -30px rgba(11, 31, 28, 0.22);
+  }
+
+  .auth-hero-card {
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-card));
+    box-shadow: 0 18px 34px -30px rgba(11, 31, 28, 0.2);
   }
 
   .auth-aesthetic .auth-tile {
     border-radius: 1rem;
-    border: 1px solid hsl(var(--primary) / 0.16);
-    background: linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--accent) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-inset));
+  }
+
+  .auth-tile {
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-inset));
   }
 
   .auth-aesthetic .auth-subtle {
     border-radius: 0.9rem;
-    border: 1px solid hsl(var(--border) / 0.8);
-    background: hsl(var(--card) / 0.9);
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-raised));
   }
-}
 
-@keyframes acet-aurora {
-  0% {
-    transform: translate(-8%, -2%);
-  }
-  50% {
-    transform: translate(10%, 6%);
-  }
-  100% {
-    transform: translate(-8%, -2%);
+  .auth-subtle {
+    border-radius: 0.9rem;
+    border: 1px solid hsl(var(--border) / 0.75);
+    background: hsl(var(--surface-raised));
   }
 }
