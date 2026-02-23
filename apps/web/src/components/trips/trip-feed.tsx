@@ -184,40 +184,26 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
   };
 
   return (
-    <div className="space-y-3">
-      <Card className="auth-hero-card overflow-hidden border-primary/20 bg-white">
-        <div className="relative h-44 overflow-hidden border-b border-primary/15 bg-[linear-gradient(125deg,rgba(10,185,198,0.88)_0%,rgba(32,160,133,0.75)_35%,rgba(255,255,255,0.35)_65%,rgba(255,255,255,0.95)_100%)]">
-          <div className="absolute left-6 top-6 rounded-full border border-white/70 bg-white/80 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-foreground">
-            Car Pool Booking
-          </div>
-          <div className="absolute left-6 top-[5.2rem] w-[58%] rounded-[2rem] border-[3px] border-slate-900/75" />
-          <span className="absolute left-[1.1rem] top-[4.6rem] flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-xs font-semibold text-slate-900">
-            1
-          </span>
-          <span className="absolute left-[43%] top-[4.1rem] flex h-7 w-7 items-center justify-center rounded-full bg-orange-400 text-xs font-semibold text-slate-900">
-            2
-          </span>
-          <span className="absolute right-[21%] top-[5rem] flex h-7 w-7 items-center justify-center rounded-full bg-cyan-500 text-xs font-semibold text-white">
-            3
-          </span>
-          <div className="absolute bottom-4 right-5 rounded-2xl border border-slate-900/20 bg-white/85 px-3 py-2 text-xs font-semibold text-slate-700">
-            Live PG2 commute lanes
-          </div>
-        </div>
-
-        <CardContent className="space-y-4 p-4">
-          <div>
-            <p className="text-xl font-semibold leading-tight">Book your next Car Pool ride</p>
-            <p className="text-sm text-muted-foreground">
-              Mobile-first flow inspired by ride-hailing apps for PG2 residents.
-            </p>
+    <div className="space-y-4">
+      <Card className="surface-raised">
+        <CardContent className="space-y-4 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xl font-semibold leading-tight">Find your next car pool ride</p>
+              <p className="text-sm text-muted-foreground">
+                Search live trips, then filter by pickup, date, and departure window.
+              </p>
+            </div>
+            <Badge variant="outline" className="status-chip px-2.5 py-1">
+              Live Search
+            </Badge>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-2">
             <div className="relative">
               <LocateFixed className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
               <Input
-                className="h-11 pl-9"
+                className="pl-9"
                 value={fromLocation}
                 onChange={(event) => setFromLocation(event.target.value)}
                 placeholder="Pickup from"
@@ -226,7 +212,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="h-11 pl-9"
+                className="pl-9"
                 placeholder="Where do you want to go?"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -257,7 +243,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                 setActiveQuery(query.trim());
               }}
             >
-              Find Car Pool Rides
+              Find Rides
             </Button>
             <Button variant="outline" onClick={applyNowFilters}>
               Leave Now
@@ -273,7 +259,7 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                 <button
                   key={destination}
                   type="button"
-                  className="rounded-full border border-border bg-accent/45 px-3 py-1 text-xs font-medium text-foreground hover:bg-accent"
+                  className="surface-inset rounded-full px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-white"
                   onClick={() => {
                     setQuery(destination);
                     setPage(1);
@@ -292,16 +278,16 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
       {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
 
       {!loading && filteredTrips.length === 0 ? (
-        <Card className="auth-hero-card">
+        <Card>
           <CardContent className="space-y-2 p-5 text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">No matching rides found</p>
-            <p>Try another destination or clear your date/time filters.</p>
+            <p>Try another destination or clear your date and time filters.</p>
           </CardContent>
         </Card>
       ) : null}
 
       {pagination ? (
-        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <p>
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} rides)
           </p>
@@ -340,13 +326,10 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
               : 'Daily';
 
           return (
-            <Card
-              key={trip.id}
-              className="auth-hero-card overflow-hidden border-border/80 bg-white"
-            >
+            <Card key={trip.id} className="overflow-hidden">
               <CardContent className="space-y-4 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant={trip.tripType === 'ONE_TIME' ? 'secondary' : 'default'}>
                         {trip.tripType === 'ONE_TIME' ? 'One Time' : 'Daily'}
@@ -357,41 +340,62 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                           : `Repeats: ${repeatLabel} at ${new Date(trip.departAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     </div>
-                    <p className="text-lg font-semibold leading-tight">
-                      {trip.fromLocation} to {trip.toLocation}
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                      Car owner: {trip.driver.profile?.name ?? 'Resident'} (
+                      {trip.driver.profile?.towerFlat ?? 'PG2'})
                     </p>
                   </div>
-                  <div className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    {seatsLeft} seats
-                  </div>
+                  <Badge variant={seatsLeft > 0 ? 'default' : 'danger'} className="px-2.5 py-1">
+                    Seats left: {seatsLeft}
+                  </Badge>
                 </div>
 
-                <div className="auth-tile space-y-2 p-3 text-sm">
-                  <p className="inline-flex items-center gap-2 text-muted-foreground">
-                    <MapPinned className="h-4 w-4 text-primary" />
-                    {trip.route || 'Route details will be shared by the car owner'}
-                  </p>
-                  <p className="inline-flex items-center gap-2 text-muted-foreground">
-                    <UsersRound className="h-4 w-4 text-primary" />
-                    Car owner: {trip.driver.profile?.name ?? 'Resident'} (
-                    {trip.driver.profile?.towerFlat ?? 'PG2'})
-                  </p>
+                <div className="surface-inset rounded-2xl p-3">
+                  <div className="relative space-y-4 pl-5">
+                    <span className="absolute bottom-2 left-[0.45rem] top-2 w-px bg-border" />
+                    <div className="relative">
+                      <span className="absolute -left-[1.05rem] top-1.5 h-2.5 w-2.5 rounded-full bg-primary" />
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        From
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">{trip.fromLocation}</p>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute -left-[1.05rem] top-1.5 h-2.5 w-2.5 rounded-full bg-slate-400" />
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        To
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">{trip.toLocation}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <p className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 text-xs text-muted-foreground">
+                      <MapPinned className="h-3.5 w-3.5 text-primary" />
+                      {trip.route || 'Route details shared by car owner'}
+                    </p>
+                    <p className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 text-xs text-muted-foreground">
+                      <Clock3 className="h-3.5 w-3.5 text-primary" />
+                      On-time pickup expected
+                    </p>
+                  </div>
+
                   {trip.notes ? (
-                    <p className="inline-flex items-start gap-2 text-muted-foreground">
-                      <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
+                    <p className="mt-2 inline-flex items-start gap-2 text-xs text-muted-foreground">
+                      <Sparkles className="mt-0.5 h-3.5 w-3.5 text-primary" />
                       Note: {trip.notes}
                     </p>
                   ) : null}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="inline-flex min-h-10 flex-1 items-center rounded-xl border border-border px-3 text-xs text-muted-foreground">
-                    <Clock3 className="mr-2 h-4 w-4 text-primary" />
-                    On-time pickup expected
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="inline-flex min-h-10 items-center rounded-xl border border-border/70 px-3 text-xs text-muted-foreground">
+                    <UsersRound className="mr-2 h-4 w-4 text-primary" />
+                    Resident verified
                   </div>
-                  <div className="inline-flex min-h-10 items-center rounded-xl border border-border px-3 text-xs text-muted-foreground">
+                  <div className="inline-flex min-h-10 items-center rounded-xl border border-border/70 px-3 text-xs text-muted-foreground">
                     <CarFront className="mr-2 h-4 w-4 text-primary" />
-                    Car Pool
+                    Shared cost commute
                   </div>
                 </div>
 

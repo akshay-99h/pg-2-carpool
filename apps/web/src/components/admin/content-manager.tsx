@@ -1,15 +1,17 @@
 'use client';
 
-import { Loader2, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MarkdownContent } from '@/components/ui/markdown-content';
 import { Textarea } from '@/components/ui/textarea';
 import { apiFetch } from '@/lib/fetcher';
 import { formatCurrencyInr } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 type TermsResponse = {
   terms?: {
@@ -70,6 +72,7 @@ Right to Remove: Admins reserve the right to remove anyone who violates these ru
 5. Legal Compliance
 
 Participants must follow all local traffic laws.`);
+  const [termsTab, setTermsTab] = useState<'edit' | 'preview'>('edit');
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -293,8 +296,38 @@ Participants must follow all local traffic laws.`);
       ) : null}
 
       <Card className="auth-hero-card">
-        <CardHeader>
-          <CardTitle>Manage Terms & Conditions</CardTitle>
+        <CardHeader className="pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle>Manage Terms & Conditions</CardTitle>
+            <div className="surface-inset inline-flex rounded-full p-1">
+              <button
+                type="button"
+                onClick={() => setTermsTab('edit')}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition',
+                  termsTab === 'edit'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-white'
+                )}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => setTermsTab('preview')}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition',
+                  termsTab === 'preview'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-white'
+                )}
+              >
+                <Eye className="h-3.5 w-3.5" />
+                Preview
+              </button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
@@ -307,10 +340,35 @@ Participants must follow all local traffic laws.`);
           </div>
           <div className="space-y-2">
             <Label>Content</Label>
-            <Textarea
-              value={termsContent}
-              onChange={(event) => setTermsContent(event.target.value)}
-            />
+            {termsTab === 'edit' ? (
+              <>
+                <Textarea
+                  value={termsContent}
+                  onChange={(event) => setTermsContent(event.target.value)}
+                  className="min-h-[240px] font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Markdown is supported for headings, lists, emphasis, links, quotes, and code
+                  blocks.
+                </p>
+              </>
+            ) : (
+              <div className="surface-inset rounded-xl p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                  Preview
+                </p>
+                <h4 className="mt-1 font-heading text-xl font-semibold tracking-tight text-foreground">
+                  {termsTitle || 'Terms & Conditions'}
+                </h4>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Version {termsVersion || 'Not set'}
+                </p>
+                <MarkdownContent
+                  content={termsContent || 'Nothing to preview yet.'}
+                  className="mt-4"
+                />
+              </div>
+            )}
           </div>
           <Button className="w-full" onClick={updateTerms} disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
