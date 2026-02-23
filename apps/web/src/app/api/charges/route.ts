@@ -13,9 +13,16 @@ const schema = z.object({
   orderNo: z.number().int().min(0).optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
+  const user = await getCurrentUser();
+  const { searchParams } = new URL(request.url);
+  const showAll = searchParams.get('all') === 'true';
+
+  // Admins can see all charges if they request it
+  const shouldShowAll = showAll && user?.role === 'ADMIN';
+
   const charges = await db.chargeItem.findMany({
-    where: { active: true },
+    where: shouldShowAll ? {} : { active: true },
     orderBy: [{ orderNo: 'asc' }, { routeName: 'asc' }],
   });
 
