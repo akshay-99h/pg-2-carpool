@@ -5,20 +5,21 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-xl border border-transparent text-sm font-semibold tracking-[0.01em] transition-all disabled:pointer-events-none disabled:opacity-50 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent text-sm font-semibold tracking-[0.01em] transition-[transform,color,background-color,border-color,box-shadow] duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
-        outline: 'border border-border bg-transparent text-foreground hover:bg-accent/70',
+        default:
+          'bg-primary text-primary-foreground shadow-[0_14px_24px_-18px_rgba(10,91,55,0.75)] hover:bg-primary/92',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/92',
+        outline: 'border border-border bg-white text-foreground hover:border-primary/35 hover:bg-primary/5',
         ghost: 'text-foreground/80 hover:bg-accent hover:text-accent-foreground',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
       },
       size: {
-        default: 'h-11 px-4 py-2',
-        sm: 'h-9 rounded-lg px-3',
-        lg: 'h-12 rounded-xl px-6',
+        default: 'h-11 px-5 py-2',
+        sm: 'h-9 px-3.5 text-xs',
+        lg: 'h-12 px-6 text-base',
         icon: 'h-11 w-11',
       },
     },
