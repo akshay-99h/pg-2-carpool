@@ -1,11 +1,11 @@
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
-import { Analytics } from '@vercel/analytics/next';
 import type { ReactNode } from 'react';
 
-import { PwaUpdateBanner } from '@/components/pwa-update-banner';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { PwaUpdateBanner } from '@/components/pwa-update-banner';
 
 import './globals.css';
 
