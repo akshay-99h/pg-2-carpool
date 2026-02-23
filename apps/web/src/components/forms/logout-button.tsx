@@ -3,9 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-export function LogoutButton() {
+export function LogoutButton({
+  className,
+  variant = 'outline',
+  size = 'sm',
+}: {
+  className?: string;
+  variant?: ButtonProps['variant'];
+  size?: ButtonProps['size'];
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +31,13 @@ export function LogoutButton() {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={onLogout} disabled={loading}>
+    <Button
+      variant={variant}
+      size={size}
+      onClick={onLogout}
+      disabled={loading}
+      className={cn(className)}
+    >
       {loading ? 'Signing out...' : 'Sign out'}
     </Button>
   );

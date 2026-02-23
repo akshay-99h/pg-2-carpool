@@ -17,28 +17,31 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-      {links.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'rounded-xl border border-border bg-white/85 p-3 text-sm font-medium transition',
-              active
-                ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'text-foreground/85 hover:border-primary/20 hover:bg-accent'
-            )}
-          >
-            <div className="flex items-center gap-2">
+    <nav className="overflow-x-auto">
+      <div className="flex min-w-max items-center gap-1">
+        {links.map((item) => {
+          const active =
+            item.href === '/admin'
+              ? pathname === '/admin'
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition',
+                active
+                  ? 'bg-primary/12 text-primary'
+                  : 'hover:bg-accent hover:text-foreground'
+              )}
+            >
               <Icon className="h-4 w-4" />
               {item.label}
-            </div>
-          </Link>
-        );
-      })}
-    </div>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

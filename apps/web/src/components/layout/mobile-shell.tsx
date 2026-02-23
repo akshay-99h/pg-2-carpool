@@ -12,7 +12,7 @@ export function MobileShell({
   withBottomInset?: boolean;
 }) {
   return (
-    <main className="min-h-screen px-3 pb-8 pt-4 md:px-6 md:pb-10 md:pt-7">
+    <main className="min-h-screen px-4 pb-8 pt-4 md:px-6 md:pb-10 md:pt-7">
       <div className="mx-auto w-full max-w-[1180px]">
         <div
           className={cn(

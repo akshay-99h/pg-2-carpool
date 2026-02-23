@@ -119,7 +119,7 @@ export function LoginForm({
   }, [googleButtonWidth, googleClientId, googleReady, router]);
 
   return (
-    <div className={cn('flex flex-col gap-6', mode === 'pwa' ? 'gap-3' : '', className)} {...props}>
+    <div className={cn('flex flex-col gap-5', mode === 'pwa' ? 'gap-3' : '', className)} {...props}>
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
@@ -127,20 +127,20 @@ export function LoginForm({
       />
       <Card
         className={cn(
-          'overflow-hidden rounded-3xl border border-border bg-white/90 p-0 shadow-[0_24px_50px_-35px_rgba(16,55,34,0.45)]',
-          mode === 'pwa' ? 'border-primary/20 shadow-[0_20px_48px_-35px_rgba(16,55,34,0.45)]' : ''
+          'overflow-hidden rounded-[1.6rem] border border-border/70 bg-white p-0 shadow-[0_20px_44px_-34px_rgba(13,30,29,0.35)]',
+          mode === 'pwa' ? 'shadow-[0_16px_38px_-30px_rgba(13,30,29,0.35)]' : ''
         )}
       >
         <CardContent
           className={cn('grid p-0 md:grid-cols-2', mode === 'pwa' ? 'md:grid-cols-1' : '')}
         >
           <form
-            className={cn('p-6 md:p-8', mode === 'pwa' ? 'p-5 md:p-5' : '')}
+            className={cn('space-y-1 p-5 md:p-7', mode === 'pwa' ? 'p-5 md:p-5' : '')}
             onSubmit={onSubmit}
           >
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="font-heading text-2xl font-semibold tracking-tight">Welcome back</h1>
                 <p className="text-balance text-sm text-muted-foreground">
                   Login to your Panchsheel Greens-II resident account
                 </p>
@@ -253,19 +253,19 @@ export function LoginForm({
               mode === 'pwa' ? 'md:hidden' : ''
             )}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0d5a3a] via-[#1a7a57] to-[#9bc0b1]" />
             <Image
               src="/branding/hero-cars.svg"
               alt="Residents sharing car pool routes"
               fill
-              className="object-cover mix-blend-screen opacity-90"
+              className="object-cover mix-blend-screen opacity-75"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5 rounded-xl border border-white/35 bg-black/20 p-4 backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/85">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
+            <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/35 bg-black/20 p-4 backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/80">
                 Resident-first commute
               </p>
-              <p className="mt-2 text-sm font-medium text-white">
+              <p className="mt-2 text-sm font-medium text-white/95">
                 Safer rides, fair cost sharing, and cleaner daily travel for PG2.
               </p>
             </div>

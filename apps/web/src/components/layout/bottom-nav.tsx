@@ -10,34 +10,39 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full border-t border-primary/15 bg-white/95 px-2 py-2 backdrop-blur md:hidden">
-      <ul className="mx-auto grid w-full max-w-2xl grid-cols-4 gap-1">
-        {mobilePrimaryNavItems.map((item) => {
-          const active =
-            item.href === '/dashboard/more'
-              ? mobileMoreActivePrefixes.some(
-                  (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-                )
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={cn(
-                  'flex flex-col items-center gap-1 rounded-xl border border-transparent px-1 py-2 text-[10px] font-medium',
-                  active
-                    ? 'border-primary/20 bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:border-primary/10 hover:bg-accent'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <nav className="fixed inset-x-0 bottom-3 z-50 md:hidden">
+      <div className="mx-auto w-[calc(100%-1.25rem)] max-w-md rounded-2xl border border-border/70 bg-white/90 p-1.5 shadow-[0_18px_34px_-24px_rgba(11,31,28,0.42)] backdrop-blur">
+        <ul className="grid grid-cols-4 gap-1">
+          {mobilePrimaryNavItems.map((item) => {
+            const active =
+              item.href === '/dashboard/more'
+                ? mobileMoreActivePrefixes.some(
+                    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+                  )
+                : item.href === '/dashboard'
+                  ? pathname === '/dashboard'
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-full border border-transparent px-1 py-1.5 text-[0.65rem] font-medium transition',
+                    active
+                      ? 'bg-primary text-primary-foreground shadow-[0_10px_18px_-14px_rgba(10,91,55,0.7)]'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="hidden leading-none min-[390px]:block">{item.label}</span>
+                  {active ? <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }
