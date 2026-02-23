@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { FileText, Loader2, Mail, RotateCcw, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
@@ -234,14 +235,14 @@ export function LoginForm({
 
               <FieldDescription className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
                 <span>By continuing, you agree to the community</span>
-                <span className="inline-flex items-center gap-1">
+                <Link href="/terms" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
                   <FileText className="h-3.5 w-3.5" />
                   Terms and Conditions
-                </span>
-                <span className="inline-flex items-center gap-1">
+                </Link>
+                <Link href="/terms" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   Safety Rules
-                </span>
+                </Link>
               </FieldDescription>
             </FieldGroup>
           </form>

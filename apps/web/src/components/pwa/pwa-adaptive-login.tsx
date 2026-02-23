@@ -2,6 +2,7 @@
 
 import { AppLogo } from '@/components/layout/app-logo';
 import { MobileShell } from '@/components/layout/mobile-shell';
+import Link from 'next/link';
 
 import { LoginForm } from '../forms/login-form';
 import { useIsPwaMobile } from './use-pwa-mobile';
@@ -37,7 +38,7 @@ export function PwaAdaptiveLogin() {
             Residents-only access with Email OTP or Google sign-in.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Terms & Conditions and Safety Rules apply to all resident trips.
+            <Link href="/terms" className="font-medium underline hover:text-primary">Terms & Conditions</Link> and <Link href="/terms" className="font-medium underline hover:text-primary">Safety Rules</Link> apply to all resident trips.
           </p>
           <LoginForm mode="pwa" className="mt-3 pb-4" />
         </section>
