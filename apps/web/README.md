@@ -42,3 +42,19 @@ pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
+
+## Enable Google Route Modes (Driving/Transit)
+To enable mode-specific directions on `/dashboard/map`, configure a Google Maps Embed key:
+
+1. Open Google Cloud Console and select/create a project.
+2. Enable `Maps Embed API`.
+3. Create an API key.
+4. Restrict the key:
+   - Application restriction: `HTTP referrers (web sites)`
+   - Allowed referrers:
+     - `http://localhost:3000/*`
+     - `https://carpool.akxost.com/*`
+   - API restriction: `Restrict key` to `Maps Embed API`.
+5. Set env var in `apps/web/.env`:
+   - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here`
+6. Add the same env var in Vercel project settings, then redeploy.

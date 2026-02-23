@@ -1,5 +1,6 @@
 'use client';
 
+import { AlertCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ export function RouteMap() {
   const [from, setFrom] = useState('Panchsheel Greens 2, Greater Noida');
   const [to, setTo] = useState('Noida Sector 62');
   const [mode, setMode] = useState<'driving' | 'transit'>('driving');
+  const hasGoogleMapsKey = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
   const mapSrc = useMemo(() => {
     const origin = encodeURIComponent(from);
@@ -44,16 +46,27 @@ export function RouteMap() {
             <Button
               variant={mode === 'driving' ? 'default' : 'outline'}
               onClick={() => setMode('driving')}
+              disabled={!hasGoogleMapsKey}
             >
               Driving
             </Button>
             <Button
               variant={mode === 'transit' ? 'default' : 'outline'}
               onClick={() => setMode('transit')}
+              disabled={!hasGoogleMapsKey}
             >
               Transit
             </Button>
           </div>
+          {!hasGoogleMapsKey ? (
+            <div className="surface-inset rounded-xl p-2.5 text-xs text-muted-foreground">
+              <p className="inline-flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-3.5 w-3.5 text-amber-600" />
+                Add <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in <code>apps/web/.env</code> to
+                enable mode-specific driving and transit routes.
+              </p>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

@@ -6,6 +6,7 @@ import { AppLogo } from '@/components/layout/app-logo';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from '@/lib/auth/session';
+import { db } from '@/lib/db';
 
 export default async function OnboardingPage() {
   const user = await getCurrentUser();
@@ -17,6 +18,54 @@ export default async function OnboardingPage() {
   if (user.profile && user.approvalStatus === 'APPROVED') {
     redirect('/dashboard');
   }
+
+  const admins = await db.user.findMany({
+    where: {
+      role: 'ADMIN',
+      isActive: true,
+      profile: {
+        is: {
+          mobileNumber: {
+            not: '',
+          },
+        },
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      profile: {
+        select: {
+          name: true,
+          towerFlat: true,
+          mobileNumber: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+    take: 6,
+  });
+
+  const adminWhatsappOptions = admins
+    .map((admin) => {
+      const mobile = admin.profile?.mobileNumber ?? '';
+      const digits = mobile.replace(/\D/g, '');
+      if (digits.length < 10) {
+        return null;
+      }
+      const label = admin.profile?.name
+        ? `${admin.profile.name} (${mobile})`
+        : `${admin.email ?? 'Admin'} (${mobile})`;
+
+      return {
+        id: admin.id,
+        label,
+        mobileNumber: mobile,
+      };
+    })
+    .filter((item): item is { id: string; label: string; mobileNumber: string } => Boolean(item));
 
   return (
     <MobileShell withBottomInset={false} className="auth-aesthetic pt-6">
@@ -64,6 +113,7 @@ export default async function OnboardingPage() {
                   }
                 : undefined
             }
+            adminWhatsappOptions={adminWhatsappOptions}
           />
         </div>
       </section>
