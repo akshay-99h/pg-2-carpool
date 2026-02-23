@@ -12,13 +12,13 @@ export function PwaAdaptiveLogin() {
 
   if (isPwaMobile) {
     return (
-      <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,#daf9f6_0%,#f9fefb_100%)] pb-[env(safe-area-inset-bottom)]">
+      <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,hsl(153_38%_93%)_0%,hsl(210_28%_98%)_54%,#ffffff_100%)] pb-[env(safe-area-inset-bottom)]">
         <section className="p-3 pb-0">
-          <div className="rounded-[2rem] border border-primary/20 bg-[linear-gradient(145deg,rgba(12,99,77,1)_0%,rgba(19,137,99,0.95)_45%,rgba(57,177,141,0.9)_100%)] p-5 text-white shadow-[0_20px_46px_-32px_rgba(8,67,56,0.58)]">
+          <div className="rounded-[2rem] border border-primary/20 bg-[linear-gradient(145deg,rgba(13,90,58,1)_0%,rgba(20,116,79,0.96)_48%,rgba(73,144,117,0.9)_100%)] p-5 text-white shadow-[0_20px_42px_-30px_rgba(11,42,36,0.52)]">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/85">
               Login
             </p>
-            <h1 className="mt-2 text-3xl font-semibold leading-tight">
+            <h1 className="mt-2 font-heading text-3xl font-semibold leading-tight">
               Continue to your resident account
             </h1>
             <p className="mt-2 text-sm text-white/90">
@@ -27,10 +27,10 @@ export function PwaAdaptiveLogin() {
           </div>
         </section>
 
-        <section className="mt-3 rounded-t-[2.3rem] border-t border-primary/20 bg-white/95 px-4 pt-5 backdrop-blur">
+        <section className="mt-3 rounded-t-[2.3rem] border-t border-border/70 bg-white/95 px-4 pt-5 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <AppLogo compact />
-            <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-primary">
+            <span className="status-chip rounded-full px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-primary">
               Secure Login
             </span>
           </div>
@@ -49,7 +49,7 @@ export function PwaAdaptiveLogin() {
   return (
     <MobileShell withBottomInset={false} className="pt-5">
       <section className="mx-auto w-full max-w-5xl space-y-4">
-        <div className="rounded-2xl border border-border bg-white/80 px-4 py-3">
+        <div className="surface-raised rounded-2xl px-4 py-3">
           <AppLogo compact />
         </div>
         <LoginForm />
