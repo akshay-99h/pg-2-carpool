@@ -1,6 +1,6 @@
 'use client';
 
-import { ContactRound, ShieldCheck, UserCog, UserRoundCheck } from 'lucide-react';
+import { BarChart3, ContactRound, ShieldCheck, UserCog, UserRoundCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,6 +11,7 @@ const links = [
   { href: '/admin/approvals', label: 'Approvals', icon: UserRoundCheck },
   { href: '/admin/ums', label: 'UMS', icon: UserCog },
   { href: '/admin/contacts', label: 'Contacts', icon: ContactRound },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 export function AdminNav() {
@@ -31,9 +32,7 @@ export function AdminNav() {
               href={item.href}
               className={cn(
                 'inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition',
-                active
-                  ? 'bg-primary/12 text-primary'
-                  : 'hover:bg-accent hover:text-foreground'
+                active ? 'bg-primary/12 text-primary' : 'hover:bg-accent hover:text-foreground'
               )}
             >
               <Icon className="h-4 w-4" />

@@ -18,12 +18,20 @@ import { requireApprovedUser } from '@/server/auth-guards';
 
 export default async function DashboardHomePage() {
   const user = await requireApprovedUser();
+  const now = new Date();
 
   const [activeTrips, openPoolRequests, myTripCount] = await Promise.all([
     db.trip.count({
       where: {
         status: 'ACTIVE',
-        OR: [{ tripType: 'DAILY' }, { tripType: 'ONE_TIME', expiresAt: { gt: new Date() } }],
+        OR: [
+          { tripType: 'DAILY' },
+          {
+            tripType: 'ONE_TIME',
+            departAt: { gt: now },
+            OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          },
+        ],
       },
     }),
     db.poolRequest.count({ where: { status: 'OPEN' } }),

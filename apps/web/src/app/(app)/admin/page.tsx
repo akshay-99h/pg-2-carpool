@@ -7,11 +7,24 @@ import { requireAdminUser } from '@/server/auth-guards';
 
 export default async function AdminPage() {
   await requireAdminUser();
+  const now = new Date();
 
   const [totalUsers, pendingUsers, totalTrips, openContacts] = await Promise.all([
     db.user.count(),
     db.user.count({ where: { approvalStatus: 'PENDING' } }),
-    db.trip.count({ where: { status: 'ACTIVE' } }),
+    db.trip.count({
+      where: {
+        status: 'ACTIVE',
+        OR: [
+          { tripType: 'DAILY' },
+          {
+            tripType: 'ONE_TIME',
+            departAt: { gt: now },
+            OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          },
+        ],
+      },
+    }),
     db.contactQuery.count({ where: { status: { not: 'CLOSED' } } }),
   ]);
 
@@ -57,6 +70,9 @@ export default async function AdminPage() {
           </Button>
           <Button asChild variant="outline">
             <Link href="/admin/content">Content Settings</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/admin/analytics">Analytics</Link>
           </Button>
         </CardContent>
       </Card>

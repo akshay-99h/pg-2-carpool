@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
 
@@ -19,6 +20,7 @@ type Query = {
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
   createdAt: string;
   user?: {
+    email?: string | null;
     profile?: {
       name: string;
       towerFlat: string;
@@ -41,6 +43,7 @@ export function ContactManager() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
 
   const contactQuery = useQuery({
@@ -78,6 +81,26 @@ export function ContactManager() {
     },
     onError: (errorValue) => {
       setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to update query');
+    },
+  });
+
+  const sendReplyMutation = useMutation({
+    mutationFn: ({ id, replyMessage }: { id: string; replyMessage: string }) =>
+      apiFetch('/api/contact', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, replyMessage }),
+      }),
+    onMutate: () => setStatus(''),
+    onSuccess: async (_result, variables) => {
+      setReplyDrafts((previous) => ({
+        ...previous,
+        [variables.id]: '',
+      }));
+      setStatus('Reply sent to customer.');
+      await queryClient.invalidateQueries({ queryKey: ['contact-queries'] });
+    },
+    onError: (errorValue) => {
+      setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to send reply');
     },
   });
 
@@ -149,6 +172,7 @@ export function ContactManager() {
                 <th className="px-3 py-2">Mobile</th>
                 <th className="px-3 py-2">Submitted</th>
                 <th className="px-3 py-2">Message</th>
+                <th className="px-3 py-2">Customer Email</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
@@ -164,6 +188,9 @@ export function ContactManager() {
                   <td className="max-w-sm px-3 py-2">
                     <p className="line-clamp-3 text-muted-foreground">{query.message}</p>
                   </td>
+                  <td className="px-3 py-2 text-muted-foreground">
+                    {query.user?.email?.trim() || 'No email available'}
+                  </td>
                   <td className="px-3 py-2">
                     <Badge
                       variant={
@@ -178,29 +205,63 @@ export function ContactManager() {
                     </Badge>
                   </td>
                   <td className="px-3 py-2">
-                    <div className="flex min-w-44 flex-wrap gap-2">
+                    <div className="flex min-w-72 flex-col gap-2">
+                      <Textarea
+                        value={replyDrafts[query.id] ?? ''}
+                        onChange={(event) =>
+                          setReplyDrafts((previous) => ({
+                            ...previous,
+                            [query.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Reply to customer"
+                        className="min-h-20"
+                      />
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => updateStatus(query.id, 'IN_PROGRESS')}
-                        disabled={updateStatusMutation.isPending}
+                        onClick={() =>
+                          sendReplyMutation.mutate({
+                            id: query.id,
+                            replyMessage: (replyDrafts[query.id] ?? '').trim(),
+                          })
+                        }
+                        disabled={
+                          sendReplyMutation.isPending ||
+                          !(replyDrafts[query.id] ?? '').trim() ||
+                          !query.user?.email
+                        }
                       >
-                        In Progress
+                        Send Reply
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => updateStatus(query.id, 'CLOSED')}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        Mark Closed
-                      </Button>
+                      {!query.user?.email ? (
+                        <p className="text-xs text-muted-foreground">
+                          This query has no account email linked.
+                        </p>
+                      ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateStatus(query.id, 'IN_PROGRESS')}
+                          disabled={updateStatusMutation.isPending || sendReplyMutation.isPending}
+                        >
+                          In Progress
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => updateStatus(query.id, 'CLOSED')}
+                          disabled={updateStatusMutation.isPending || sendReplyMutation.isPending}
+                        >
+                          Mark Closed
+                        </Button>
+                      </div>
                     </div>
                   </td>
                 </tr>
               ))}
               {!isLoading && queries.length === 0 ? (
                 <tr className="border-t border-border">
-                  <td colSpan={6} className="px-3 py-4 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-3 py-4 text-center text-muted-foreground">
                     No contact queries yet.
                   </td>
                 </tr>

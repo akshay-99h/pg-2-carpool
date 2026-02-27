@@ -114,6 +114,47 @@ async function notifyAdminsOfContactQuery({
   });
 }
 
+async function sendContactReply({
+  toEmail,
+  name,
+  mobile,
+  originalMessage,
+  replyMessage,
+}: {
+  toEmail: string;
+  name: string;
+  mobile: string;
+  originalMessage: string;
+  replyMessage: string;
+}) {
+  const textBody = [
+    `Hi ${name},`,
+    '',
+    'Thanks for contacting Car Pool PG2. Here is our response:',
+    '',
+    replyMessage,
+    '',
+    'Your original query:',
+    originalMessage,
+    '',
+    `Mobile shared: ${mobile}`,
+  ].join('\n');
+
+  if (!resend) {
+    if (!isProduction) {
+      console.info('Contact reply email fallback', { toEmail, textBody });
+    }
+    return;
+  }
+
+  await resend.emails.send({
+    from: env.emailFrom,
+    to: [toEmail],
+    subject: 'Response to your Car Pool PG2 support query',
+    text: textBody,
+  });
+}
+
 export async function GET(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
@@ -274,10 +315,15 @@ export async function POST(request: Request) {
   }
 }
 
-const updateSchema = z.object({
-  id: z.string().uuid(),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'CLOSED']),
-});
+const updateSchema = z
+  .object({
+    id: z.string().uuid(),
+    status: z.enum(['OPEN', 'IN_PROGRESS', 'CLOSED']).optional(),
+    replyMessage: z.string().trim().min(1).max(2000).optional(),
+  })
+  .refine((value) => value.status !== undefined || value.replyMessage !== undefined, {
+    message: 'Provide a status or a reply message',
+  });
 
 export async function PATCH(request: Request) {
   const user = await getCurrentUser();
@@ -297,18 +343,72 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: parsed.error.message }, { status: 400 });
     }
 
-    const query = await db.contactQuery.update({
+    const existing = await db.contactQuery.findUnique({
       where: { id: parsed.data.id },
-      data: { status: parsed.data.status },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
     });
 
-    await logAudit({
-      actorId: user.id,
-      action: 'CONTACT_STATUS_UPDATED',
-      entity: 'contact_query',
-      entityId: query.id,
-      metadata: { status: query.status },
-    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Contact query not found' }, { status: 404 });
+    }
+
+    let nextStatus = parsed.data.status;
+
+    if (parsed.data.replyMessage) {
+      const toEmail = existing.user?.email?.trim().toLowerCase();
+      if (!toEmail) {
+        return NextResponse.json(
+          { error: 'No user email available for this query. Reply cannot be sent.' },
+          { status: 400 }
+        );
+      }
+
+      await sendContactReply({
+        toEmail,
+        name: existing.name,
+        mobile: existing.mobile,
+        originalMessage: existing.message,
+        replyMessage: parsed.data.replyMessage,
+      });
+
+      await logAudit({
+        actorId: user.id,
+        action: 'CONTACT_REPLY_SENT',
+        entity: 'contact_query',
+        entityId: existing.id,
+        metadata: {
+          toEmail,
+          replyLength: parsed.data.replyMessage.length,
+        },
+      });
+
+      if (!nextStatus && existing.status === 'OPEN') {
+        nextStatus = 'IN_PROGRESS';
+      }
+    }
+
+    const query = nextStatus
+      ? await db.contactQuery.update({
+          where: { id: parsed.data.id },
+          data: { status: nextStatus },
+        })
+      : existing;
+
+    if (nextStatus && nextStatus !== existing.status) {
+      await logAudit({
+        actorId: user.id,
+        action: 'CONTACT_STATUS_UPDATED',
+        entity: 'contact_query',
+        entityId: query.id,
+        metadata: { status: query.status },
+      });
+    }
 
     return NextResponse.json({ ok: true, query });
   } catch (error) {

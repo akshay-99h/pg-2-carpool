@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pg2-carpool-v3';
-const ASSETS = [
+const CACHE_NAME = 'pg2-carpool-v4';
+const SHELL_ASSETS = [
   '/',
   '/login',
   '/manifest.webmanifest',
@@ -7,11 +7,20 @@ const ASSETS = [
   '/icons/icon-512.svg',
   '/branding/pg2-mark.svg',
 ];
+const STATIC_PATH_PREFIXES = ['/_next/static/', '/icons/', '/branding/'];
+
+function isStaticAssetRequest(request, pathname) {
+  if (STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return true;
+  }
+
+  return ['style', 'script', 'image', 'font'].includes(request.destination);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return cache.addAll(SHELL_ASSETS);
     })
   );
   self.skipWaiting();
@@ -43,19 +52,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const shell = (await caches.match('/')) ?? (await caches.match('/login'));
+        return shell || Response.error();
+      })
+    );
+    return;
+  }
+
+  if (!isStaticAssetRequest(event.request, requestUrl.pathname)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
+      const networkFetch = fetch(event.request).then((response) => {
+        if (response?.ok) {
+          const cloned = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+        }
+        return response;
+      });
+
       if (cached) {
         return cached;
       }
 
-      return fetch(event.request)
-        .then((response) => {
-          const cloned = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
-          return response;
-        })
-        .catch(() => caches.match('/'));
+      return networkFetch.catch(() => caches.match('/'));
     })
   );
 });

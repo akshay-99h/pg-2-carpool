@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 
 import { logAudit } from '@/lib/audit';
 import { forbidden, getCurrentUser, unauthorized } from '@/lib/auth/session';
-import { ONE_TIME_TRIP_TTL_MS } from '@/lib/constants';
 import { db } from '@/lib/db';
 
 const TRIPS_PAGE_SIZE_DEFAULT = 20;
@@ -36,6 +35,7 @@ export async function GET(request: Request) {
     TRIPS_PAGE_SIZE_MAX
   );
   const skip = (page - 1) * pageSize;
+  const now = new Date();
 
   const textFilter = q
     ? {
@@ -55,9 +55,10 @@ export async function GET(request: Request) {
           { tripType: 'DAILY' as const },
           {
             tripType: 'ONE_TIME' as const,
-            expiresAt: {
-              gt: new Date(),
+            departAt: {
+              gt: now,
             },
+            OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
           },
         ],
       },
@@ -137,10 +138,7 @@ export async function POST(request: Request) {
 
     const departAt = new Date(parsed.data.departAtIso);
     const repeatDays = parsed.data.tripType === TripType.DAILY ? parsed.data.repeatDays : [];
-    const expiresAt =
-      parsed.data.tripType === TripType.ONE_TIME
-        ? new Date(Date.now() + ONE_TIME_TRIP_TTL_MS)
-        : null;
+    const expiresAt = parsed.data.tripType === TripType.ONE_TIME ? departAt : null;
 
     const trip = await db.trip.create({
       data: {

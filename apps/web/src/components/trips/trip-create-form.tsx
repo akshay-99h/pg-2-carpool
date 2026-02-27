@@ -120,7 +120,7 @@ export function TripCreateForm() {
         <CardDescription>
           {tripType === 'DAILY'
             ? 'Daily rides repeat on selected days and stay active until you cancel.'
-            : 'One-time rides auto-hide after 1 hour.'}
+            : 'One-time rides auto-hide once departure time has passed.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">

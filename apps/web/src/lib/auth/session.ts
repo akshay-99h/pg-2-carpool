@@ -9,6 +9,7 @@ import { db } from '@/lib/db';
 import { env } from '@/lib/env';
 
 const secret = new TextEncoder().encode(env.authSecret);
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 type SessionPayload = {
   userId: string;
@@ -18,7 +19,7 @@ export async function signSession(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime('7d')
     .sign(secret);
 }
 
@@ -41,7 +42,7 @@ export async function setSessionCookie(response: NextResponse, userId: string) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: SESSION_TTL_SECONDS,
   });
 }
 

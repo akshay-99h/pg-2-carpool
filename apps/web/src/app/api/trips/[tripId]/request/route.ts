@@ -22,6 +22,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ tri
       return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
     }
 
+    const now = new Date();
+    const oneTimeTripEnded =
+      trip.tripType === 'ONE_TIME' &&
+      (trip.departAt <= now || (trip.expiresAt ? trip.expiresAt <= now : false));
+    if (oneTimeTripEnded) {
+      return NextResponse.json({ error: 'Trip has already ended' }, { status: 400 });
+    }
+
     if (trip.driverId === user.id) {
       return NextResponse.json({ error: 'Cannot request own trip' }, { status: 400 });
     }
