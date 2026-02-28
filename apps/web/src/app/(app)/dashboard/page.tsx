@@ -3,7 +3,7 @@ import {
   Clock4,
   Mail,
   MapPinned,
-  Route,
+  Search,
   ShieldCheck,
   UserRoundSearch,
 } from 'lucide-react';
@@ -61,10 +61,10 @@ export default async function DashboardHomePage() {
   const quickActions = [
     { href: '/dashboard/trips/new', label: 'Post Trip', icon: CarTaxiFront },
     { href: '/dashboard/pool-requests', label: 'Post Pool Request', icon: UserRoundSearch },
-    { href: '/dashboard/map', label: 'Find Route', icon: Route },
+    { href: '/dashboard/trips', label: 'Find Ride', icon: Search },
     { href: '/dashboard/find-rider', label: 'Find Rider', icon: UserRoundSearch },
     { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
-    { href: '/dashboard/contact', label: 'Contact', icon: Mail },
+    { href: '/dashboard/contact', label: 'Contact us', icon: Mail },
   ];
 
   return (

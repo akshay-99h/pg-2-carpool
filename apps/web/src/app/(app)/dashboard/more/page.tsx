@@ -1,3 +1,4 @@
+import { ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 import { mobileMoreNavItems } from '@/components/layout/nav-items';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { requireProfileCompletion } from '@/server/auth-guards';
 
 export default async function MorePage() {
-  await requireProfileCompletion();
+  const user = await requireProfileCompletion();
 
   return (
     <div className="space-y-3">
@@ -43,6 +44,24 @@ export default async function MorePage() {
             </Link>
           );
         })}
+
+        {user.role === 'ADMIN' ? (
+          <Link href="/admin">
+            <Card className="h-full transition hover:border-primary/30 hover:bg-primary/5">
+              <CardContent className="flex h-full items-start gap-3 p-4">
+                <div className="auth-subtle p-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">Admin Portal</p>
+                  <p className="text-xs text-muted-foreground">
+                    Switch to approvals, analytics, contacts, and admin tools.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : null}
       </div>
     </div>
   );
