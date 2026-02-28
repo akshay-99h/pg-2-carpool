@@ -1,3 +1,4 @@
+import { Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -7,6 +8,7 @@ import { BottomNav } from '@/components/layout/bottom-nav';
 import { DesktopNavRail } from '@/components/layout/desktop-nav-rail';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { Badge } from '@/components/ui/badge';
+import { db } from '@/lib/db';
 import { requireProfileCompletion } from '@/server/auth-guards';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
@@ -14,6 +16,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const userName = user.profile?.name ?? user.email ?? 'Resident';
   const towerFlat = user.profile?.towerFlat ?? null;
   const approvalStatus = user.approvalStatus ?? 'PENDING';
+  const appNotice = await db.appNotice
+    .findUnique({
+      where: { id: 'app-notice' },
+    })
+    .catch(() => null);
+  const activeNotice = appNotice?.active ? appNotice : null;
 
   return (
     <MobileShell>
@@ -36,6 +44,20 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
         </div>
       </header>
+
+      {activeNotice ? (
+        <section className="surface-raised rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Megaphone className="h-4 w-4" />
+            </span>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">{activeNotice.title}</p>
+              <p className="text-sm text-muted-foreground">{activeNotice.content}</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-[280px_1fr] md:items-start">
         <DesktopNavRail userName={userName} towerFlat={towerFlat} approvalStatus={approvalStatus} />

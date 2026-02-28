@@ -192,6 +192,15 @@ model TermsDocument {
   updatedAt   DateTime @updatedAt
 }
 
+model AppNotice {
+  id        String   @id @default("app-notice")
+  title     String
+  content   String
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model ContactQuery {
   id         String        @id @default(uuid())
   userId     String?

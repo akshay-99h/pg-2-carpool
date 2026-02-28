@@ -21,6 +21,14 @@ type TermsResponse = {
   } | null;
 };
 
+type NoticeResponse = {
+  notice?: {
+    title: string;
+    content: string;
+    active: boolean;
+  } | null;
+};
+
 type ChargeItem = {
   id: string;
   routeName: string;
@@ -39,7 +47,8 @@ export function ContentManager() {
 
   const [termsTitle, setTermsTitle] = useState('Terms and Conditions, Car Pool PG2');
   const [termsVersion, setTermsVersion] = useState('1.0');
-  const [termsContent, setTermsContent] = useState(`By joining and remaining in this group, you agree to the following terms:
+  const [termsContent, setTermsContent] =
+    useState(`By joining and remaining in this group, you agree to the following terms:
 
 1. Membership & Eligibility
 
@@ -73,6 +82,9 @@ Right to Remove: Admins reserve the right to remove anyone who violates these ru
 
 Participants must follow all local traffic laws.`);
   const [termsTab, setTermsTab] = useState<'edit' | 'preview'>('edit');
+  const [noticeTitle, setNoticeTitle] = useState('');
+  const [noticeContent, setNoticeContent] = useState('');
+  const [noticeActive, setNoticeActive] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -100,7 +112,21 @@ Participants must follow all local traffic laws.`);
       }
     };
 
+    const loadNotice = async () => {
+      try {
+        const response = await apiFetch<NoticeResponse>('/api/notice');
+        if (response.notice) {
+          setNoticeTitle(response.notice.title);
+          setNoticeContent(response.notice.content);
+          setNoticeActive(response.notice.active);
+        }
+      } catch {
+        // no-op
+      }
+    };
+
     void loadTerms();
+    void loadNotice();
     void loadCharges();
   }, [loadCharges]);
 
@@ -162,7 +188,9 @@ Participants must follow all local traffic laws.`);
       setStatus('Shared expense updated successfully.');
       await loadCharges();
     } catch (errorValue) {
-      setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to update shared expense');
+      setStatus(
+        errorValue instanceof Error ? errorValue.message : 'Failed to update shared expense'
+      );
     } finally {
       setLoading(false);
     }
@@ -181,7 +209,9 @@ Participants must follow all local traffic laws.`);
       setStatus('Shared expense deleted successfully.');
       await loadCharges();
     } catch (errorValue) {
-      setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to delete shared expense');
+      setStatus(
+        errorValue instanceof Error ? errorValue.message : 'Failed to delete shared expense'
+      );
     } finally {
       setLoading(false);
     }
@@ -207,8 +237,30 @@ Participants must follow all local traffic laws.`);
     }
   };
 
+  const updateNotice = async () => {
+    setLoading(true);
+    setStatus('');
+    try {
+      await apiFetch('/api/notice', {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: noticeTitle,
+          content: noticeContent,
+          active: noticeActive,
+        }),
+      });
+      setStatus(noticeActive ? 'App notice published.' : 'App notice saved as hidden.');
+    } catch (errorValue) {
+      setStatus(errorValue instanceof Error ? errorValue.message : 'Failed to update app notice');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
+      {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+
       <Card className="auth-hero-card">
         <CardHeader>
           <CardTitle>Manage Shared Expenses</CardTitle>
@@ -261,11 +313,16 @@ Participants must follow all local traffic laws.`);
           </CardHeader>
           <CardContent className="space-y-2">
             {charges.map((charge) => (
-              <div key={charge.id} className="auth-tile flex items-center justify-between gap-3 p-3">
+              <div
+                key={charge.id}
+                className="auth-tile flex items-center justify-between gap-3 p-3"
+              >
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold">{charge.routeName}</p>
-                    <p className="text-sm font-bold text-primary">{formatCurrencyInr(charge.amount)}</p>
+                    <p className="text-sm font-bold text-primary">
+                      {formatCurrencyInr(charge.amount)}
+                    </p>
                   </div>
                   {charge.notes ? (
                     <p className="mt-1 text-xs text-muted-foreground">{charge.notes}</p>
@@ -294,6 +351,44 @@ Participants must follow all local traffic laws.`);
           </CardContent>
         </Card>
       ) : null}
+
+      <Card className="auth-hero-card">
+        <CardHeader>
+          <CardTitle>App Notice</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>Notice Title</Label>
+            <Input value={noticeTitle} onChange={(event) => setNoticeTitle(event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Notice Message</Label>
+            <Textarea
+              value={noticeContent}
+              onChange={(event) => setNoticeContent(event.target.value)}
+              className="min-h-[120px]"
+              placeholder="For example: Pickup gate 2 will remain busier than usual tonight."
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={noticeActive}
+              onChange={(event) => setNoticeActive(event.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            Show this notice inside the app
+          </label>
+          <Button
+            className="w-full"
+            onClick={updateNotice}
+            disabled={loading || noticeTitle.trim().length < 3 || noticeContent.trim().length < 10}
+          >
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save App Notice
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card className="auth-hero-card">
         <CardHeader className="pb-2">
@@ -374,7 +469,6 @@ Participants must follow all local traffic laws.`);
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Publish Terms
           </Button>
-          {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
         </CardContent>
       </Card>
     </div>

@@ -242,7 +242,7 @@ export function MobileImageCarousel({
           <Button
             type="button"
             onClick={goToNextSlide}
-            className="h-12 w-full rounded-xl bg-blue-600 text-base font-semibold text-white hover:bg-blue-500"
+            className="h-12 w-full rounded-2xl border border-primary/30 bg-primary text-base font-semibold text-primary-foreground shadow-[0_16px_28px_-18px_rgba(10,91,55,0.82)] hover:bg-primary/92"
           >
             {isLastSlide ? 'Continue' : 'Next'}
           </Button>

@@ -70,6 +70,12 @@ export const contactSchema = z.object({
   captcha: z.string().trim().min(4).max(32),
 });
 
+export const appNoticeSchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  content: z.string().trim().min(10).max(600),
+  active: z.boolean(),
+});
+
 export const userAdminUpdateSchema = z.object({
   userId: z.string().uuid(),
   role: userRoleSchema.optional(),
