@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ type MobileImageCarouselProps = {
   className?: string;
   autoPlayMs?: number;
   mode?: 'default' | 'hero';
+  heroContinueHref?: string;
 };
 
 export function MobileImageCarousel({
@@ -20,12 +22,14 @@ export function MobileImageCarousel({
   className,
   autoPlayMs = 4200,
   mode = 'default',
+  heroContinueHref = '/login',
 }: MobileImageCarouselProps) {
+  const router = useRouter();
+  const isHero = mode === 'hero';
   const [index, setIndex] = useState(0);
-  const [autoplay, setAutoplay] = useState(true);
+  const [autoplay, setAutoplay] = useState(!isHero);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
-  const isHero = mode === 'hero';
 
   const safeSlides = useMemo(() => (slides.length > 0 ? slides : []), [slides]);
   const total = safeSlides.length;
@@ -68,6 +72,16 @@ export function MobileImageCarousel({
   }
 
   const active = safeSlides[index] ?? firstSlide;
+  const isLastSlide = index >= total - 1;
+
+  const goToNextSlide = () => {
+    setAutoplay(false);
+    if (isLastSlide) {
+      router.push(heroContinueHref);
+      return;
+    }
+    setIndex((current) => (current + 1) % total);
+  };
 
   return (
     <section
@@ -125,7 +139,7 @@ export function MobileImageCarousel({
               className={cn(
                 'pointer-events-none absolute inset-0',
                 isHero
-                  ? 'bg-[linear-gradient(180deg,rgba(8,34,30,0.14)_4%,rgba(8,34,30,0.5)_46%,rgba(8,34,30,0.9)_100%)]'
+                  ? 'bg-[linear-gradient(180deg,rgba(0,0,0,0.24)_2%,rgba(0,0,0,0.54)_44%,rgba(0,0,0,0.92)_100%)]'
                   : 'bg-[linear-gradient(180deg,rgba(8,34,30,0.08)_12%,rgba(8,34,30,0.68)_74%,rgba(8,34,30,0.88)_100%)]'
               )}
             />
@@ -153,10 +167,10 @@ export function MobileImageCarousel({
       <div
         className={cn(
           'absolute left-4 right-4 space-y-2 text-white',
-          isHero ? 'bottom-24 text-center' : 'bottom-16'
+          isHero ? 'bottom-[calc(4.9rem+env(safe-area-inset-bottom))] text-center' : 'bottom-16'
         )}
       >
-        <p className={cn('font-semibold leading-tight', isHero ? 'text-[2.15rem]' : 'text-2xl')}>
+        <p className={cn('font-semibold leading-tight', isHero ? 'text-[2.35rem]' : 'text-2xl')}>
           {active.title}
         </p>
         <p
@@ -169,7 +183,9 @@ export function MobileImageCarousel({
       <div
         className={cn(
           'absolute left-3 right-3 flex items-center gap-2',
-          isHero ? 'bottom-4 justify-center' : 'bottom-3 justify-between'
+          isHero
+            ? 'bottom-[calc(9.4rem+env(safe-area-inset-bottom))] justify-center'
+            : 'bottom-3 justify-between'
         )}
       >
         <div className={cn('flex items-center', isHero ? 'gap-2' : 'gap-1.5')}>
@@ -184,7 +200,7 @@ export function MobileImageCarousel({
               className={cn(
                 'h-2.5 rounded-full border border-white/35 transition-all',
                 slideIndex === index ? 'w-6 bg-white' : 'w-2.5 bg-white/35',
-                isHero ? 'h-2' : ''
+                isHero ? 'h-2.5 border-white/30' : ''
               )}
               aria-label={`Go to slide ${slideIndex + 1}`}
             />
@@ -220,6 +236,18 @@ export function MobileImageCarousel({
           </div>
         ) : null}
       </div>
+
+      {isHero ? (
+        <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4">
+          <Button
+            type="button"
+            onClick={goToNextSlide}
+            className="h-12 w-full rounded-xl bg-blue-600 text-base font-semibold text-white hover:bg-blue-500"
+          >
+            {isLastSlide ? 'Continue' : 'Next'}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

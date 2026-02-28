@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
-export default async function SummaryPage() {
+export default async function AboutPage() {
   await requireApprovedUser();
 
   return (
     <Card className="auth-hero-card">
       <CardHeader>
-        <CardTitle>Project Summary</CardTitle>
+        <CardTitle>About Car Pool PG2</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm text-muted-foreground">
         <p>
@@ -19,8 +19,8 @@ export default async function SummaryPage() {
           follow approved route-wise charge guidance.
         </p>
         <p>
-          One-time rides auto-expire one hour after posting. Admins verify members before enabling
-          ride features.
+          Residents can also post rider demand requests when no matching trip is available so
+          vehicle owners can respond quickly.
         </p>
       </CardContent>
     </Card>

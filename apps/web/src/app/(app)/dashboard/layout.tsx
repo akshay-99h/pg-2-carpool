@@ -13,7 +13,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const user = await requireProfileCompletion();
   const userName = user.profile?.name ?? user.email ?? 'Resident';
   const towerFlat = user.profile?.towerFlat ?? null;
-  const role = user.role ?? 'USER';
   const approvalStatus = user.approvalStatus ?? 'PENDING';
 
   return (
@@ -23,26 +22,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           <AppLogo compact className="shrink-0" />
 
           <div className="flex items-center gap-1.5 md:gap-2">
-            <Badge
-              variant={role === 'ADMIN' ? 'secondary' : 'outline'}
-              className="status-chip px-2.5 py-1"
-            >
-              {role}
-            </Badge>
             {approvalStatus !== 'APPROVED' ? (
               <Link
                 href="/approval-pending"
                 className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-amber-900"
               >
                 Pending
-              </Link>
-            ) : null}
-            {role === 'ADMIN' ? (
-              <Link
-                href="/admin"
-                className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-primary"
-              >
-                Admin
               </Link>
             ) : null}
             <div className="shrink-0">
@@ -53,22 +38,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </header>
 
       <section className="grid gap-4 md:grid-cols-[280px_1fr] md:items-start">
-        <DesktopNavRail
-          userName={userName}
-          towerFlat={towerFlat}
-          role={role}
-          approvalStatus={approvalStatus}
-        />
+        <DesktopNavRail userName={userName} towerFlat={towerFlat} approvalStatus={approvalStatus} />
         <div className="space-y-4 md:space-y-5">
           <div className="surface-raised hidden items-center justify-between gap-3 rounded-2xl px-4 py-3 md:flex">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">{userName}</p>
-              <p className="text-xs text-muted-foreground">
-                Tower/Flat: {towerFlat ?? 'Not set'}
-              </p>
+              <p className="text-xs text-muted-foreground">Tower/Flat: {towerFlat ?? 'Not set'}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={role === 'ADMIN' ? 'secondary' : 'outline'}>{role}</Badge>
               {approvalStatus !== 'APPROVED' ? <Badge variant="warning">Pending</Badge> : null}
               <LogoutButton />
             </div>

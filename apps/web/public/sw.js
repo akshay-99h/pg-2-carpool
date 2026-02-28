@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pg2-carpool-v4';
+const CACHE_NAME = 'pg2-carpool-v5';
 const SHELL_ASSETS = [
   '/',
   '/login',

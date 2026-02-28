@@ -28,15 +28,17 @@ export function BottomNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-full border border-transparent px-1 py-1.5 text-[0.65rem] font-medium transition',
+                    'relative flex min-h-12 items-center justify-center rounded-full border border-transparent px-1 py-1.5 transition',
                     active
                       ? 'bg-primary text-primary-foreground shadow-[0_10px_18px_-14px_rgba(10,91,55,0.7)]'
                       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="hidden leading-none min-[390px]:block">{item.label}</span>
-                  {active ? <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                  <span className="sr-only">{item.label}</span>
+                  {active ? (
+                    <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-white" />
+                  ) : null}
                 </Link>
               </li>
             );

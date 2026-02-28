@@ -12,11 +12,10 @@ import { cn } from '@/lib/utils';
 type DesktopNavRailProps = {
   userName: string;
   towerFlat?: string | null;
-  role: string;
   approvalStatus: string;
 };
 
-export function DesktopNavRail({ userName, towerFlat, role, approvalStatus }: DesktopNavRailProps) {
+export function DesktopNavRail({ userName, towerFlat, approvalStatus }: DesktopNavRailProps) {
   const pathname = usePathname();
 
   return (
@@ -29,9 +28,6 @@ export function DesktopNavRail({ userName, towerFlat, role, approvalStatus }: De
             Tower/Flat: {towerFlat ?? 'Not set'}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Badge variant={role === 'ADMIN' ? 'secondary' : 'outline'} size="sm">
-              {role}
-            </Badge>
             {approvalStatus !== 'APPROVED' ? (
               <Badge variant="warning" size="sm">
                 Pending Approval
@@ -75,14 +71,6 @@ export function DesktopNavRail({ userName, towerFlat, role, approvalStatus }: De
         >
           Profile Settings
         </Link>
-        {role === 'ADMIN' ? (
-          <Link
-            href="/admin"
-            className="inline-flex w-full items-center justify-center rounded-full border border-primary/25 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/15"
-          >
-            Open Admin Portal
-          </Link>
-        ) : null}
         <LogoutButton className="w-full justify-center" />
       </div>
     </aside>

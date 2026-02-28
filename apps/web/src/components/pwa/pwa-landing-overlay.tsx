@@ -1,11 +1,7 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect } from 'react';
-
-import { AppLogo } from '@/components/layout/app-logo';
-import { Button } from '@/components/ui/button';
 
 import { MobileImageCarousel } from './mobile-image-carousel';
 import { pwaCommuteSlides } from './pexels-slides';
@@ -31,34 +27,26 @@ export function PwaLandingOverlay() {
   }
 
   return (
-    <div className="fixed inset-0 z-[85] overflow-hidden bg-[linear-gradient(180deg,#dbfaf6_0%,#f9fefb_100%)]">
-      <div className="relative flex h-full flex-col p-3 pb-[calc(0.8rem+env(safe-area-inset-bottom))]">
-        <div className="pointer-events-none absolute left-0 right-0 top-6 z-20 flex justify-center px-4">
-          <div className="pointer-events-auto rounded-full border border-white/25 bg-black/20 px-4 py-2 backdrop-blur">
-            <AppLogo compact className="text-white" />
+    <div className="fixed inset-0 z-[85] overflow-hidden bg-black">
+      <div className="relative h-full">
+        <div className="pointer-events-none absolute left-4 top-[calc(0.65rem+env(safe-area-inset-top))] z-20">
+          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 backdrop-blur-md">
+            <Image
+              src="/icons/icon-192.svg"
+              alt="Car Pool PG2"
+              width={18}
+              height={18}
+              className="rounded"
+            />
+            <span className="text-sm font-semibold text-white">Car Pool PG2</span>
           </div>
         </div>
 
-        <div className="h-full">
-          <MobileImageCarousel
-            slides={pwaCommuteSlides}
-            className="h-full"
-            autoPlayMs={3800}
-            mode="hero"
-          />
-        </div>
-
-        <div className="absolute bottom-[calc(0.95rem+env(safe-area-inset-bottom))] left-5 right-5 z-20 space-y-2">
-          <Button asChild className="h-12 rounded-2xl bg-slate-950 text-white hover:bg-slate-900">
-            <Link href="/login">
-              Get started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <p className="text-center text-xs font-medium text-white/85">
-            Swipe to explore and continue to login.
-          </p>
-        </div>
+        <MobileImageCarousel
+          slides={pwaCommuteSlides}
+          className="h-full rounded-none border-0"
+          mode="hero"
+        />
       </div>
     </div>
   );

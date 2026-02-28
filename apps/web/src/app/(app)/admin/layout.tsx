@@ -5,7 +5,6 @@ import { LogoutButton } from '@/components/forms/logout-button';
 import { AdminNav } from '@/components/layout/admin-nav';
 import { AppLogo } from '@/components/layout/app-logo';
 import { MobileShell } from '@/components/layout/mobile-shell';
-import { Badge } from '@/components/ui/badge';
 import { requireAdminUser } from '@/server/auth-guards';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -16,13 +15,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <header className="app-surface space-y-3 rounded-2xl p-4 md:p-5">
         <div className="flex items-start justify-between gap-3">
           <AppLogo compact />
-          <div className="space-y-2 text-right md:flex md:items-center md:gap-2 md:space-y-0">
-            <Badge variant="secondary" className="status-pill justify-center px-2.5">
-              ADMIN
-            </Badge>
-            <div className="hidden md:block">
-              <LogoutButton />
-            </div>
+          <div className="hidden md:block">
+            <LogoutButton />
           </div>
         </div>
 

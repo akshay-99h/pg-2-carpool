@@ -4,12 +4,12 @@ import {
   FileText,
   Grid2x2,
   Home,
+  Info,
   type LucideIcon,
   Mail,
   MapPinned,
   Route,
   SearchCheck,
-  SquareDashedKanban,
   WalletCards,
 } from 'lucide-react';
 
@@ -63,10 +63,10 @@ export const mobileMoreNavItems: NavItem[] = [
     description: 'Read safety and compliance policies',
   },
   {
-    href: '/dashboard/pool-requests',
-    label: 'Pool Requests',
+    href: '/dashboard/find-rider',
+    label: 'Find Rider',
     icon: SearchCheck,
-    description: 'Post ride demand when no trips are available',
+    description: 'Browse and respond to rider demand postings',
   },
   {
     href: '/dashboard/contact',
@@ -75,10 +75,10 @@ export const mobileMoreNavItems: NavItem[] = [
     description: 'Share support requests with admins',
   },
   {
-    href: '/dashboard/summary',
-    label: 'Project Summary',
-    icon: SquareDashedKanban,
-    description: 'Overview of Car Pool PG2 initiative',
+    href: '/dashboard/about',
+    label: 'About',
+    icon: Info,
+    description: 'Read about Car Pool PG2 and how it works',
   },
 ];
 
@@ -89,6 +89,7 @@ export const mobileMoreActivePrefixes = [
   '/dashboard/profile',
   '/dashboard/terms',
   '/dashboard/pool-requests',
+  '/dashboard/find-rider',
   '/dashboard/contact',
-  '/dashboard/summary',
+  '/dashboard/about',
 ];
