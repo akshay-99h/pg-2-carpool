@@ -26,14 +26,14 @@ export const userNavItems: NavItem[] = [
   { href: '/dashboard/map', label: 'Route Map', icon: Route },
   { href: '/dashboard/charges', label: 'Shared Expenses', icon: WalletCards },
   { href: '/dashboard/profile', label: 'Profile', icon: CircleUserRound },
-  { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
+  { href: '/dashboard/bookings', label: 'My Bookings', icon: MapPinned },
   { href: '/dashboard/terms', label: 'Terms and Conditions', icon: FileText },
 ];
 
 export const mobilePrimaryNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/dashboard/trips', label: 'Trips', icon: CarTaxiFront },
-  { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
+  { href: '/dashboard/bookings', label: 'My Bookings', icon: MapPinned },
   { href: '/dashboard/more', label: 'More', icon: Grid2x2 },
 ];
 
@@ -64,9 +64,9 @@ export const mobileMoreNavItems: NavItem[] = [
   },
   {
     href: '/dashboard/find-rider',
-    label: 'Find Rider',
+    label: 'Find Passenger',
     icon: SearchCheck,
-    description: 'Browse and respond to rider demand postings',
+    description: 'Browse posted pool requests and match them with your trip',
   },
   {
     href: '/dashboard/contact',

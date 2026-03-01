@@ -9,9 +9,9 @@ export default async function BookingsPage() {
     <div className="space-y-3">
       <Card className="auth-hero-card">
         <CardContent className="pt-5">
-          <p className="text-lg font-semibold">Booking confirmations</p>
+          <p className="text-lg font-semibold">My bookings</p>
           <p className="text-sm text-muted-foreground">
-            Manage incoming requests and track your own seat bookings.
+            Manage requests on your trips and track the seat requests you sent.
           </p>
         </CardContent>
       </Card>

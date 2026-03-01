@@ -197,8 +197,10 @@ export function BookingManager() {
 
         <Card className="auth-hero-card">
           <CardHeader>
-            <CardTitle>Your booking requests</CardTitle>
-            <p className="text-sm text-muted-foreground">Track status of seat requests you sent.</p>
+            <CardTitle>My bookings</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Track the status of seat requests you sent.
+            </p>
           </CardHeader>
           <CardContent className="space-y-2">
             {outgoing.length === 0 ? (

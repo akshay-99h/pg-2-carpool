@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
 export default async function PoolRequestsPage() {
-  await requireApprovedUser();
+  const user = await requireApprovedUser();
 
   return (
     <div className="space-y-3">
@@ -15,7 +15,12 @@ export default async function PoolRequestsPage() {
           </p>
         </CardContent>
       </Card>
-      <PoolRequestBoard />
+      <PoolRequestBoard
+        currentUserId={user.id}
+        listTitle="Open pool requests"
+        listDescription="Track active pool requests from residents and delete your own posts when plans change."
+        emptyStateText="No open pool requests."
+      />
     </div>
   );
 }

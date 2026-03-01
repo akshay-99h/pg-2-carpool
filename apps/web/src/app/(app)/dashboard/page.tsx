@@ -62,8 +62,8 @@ export default async function DashboardHomePage() {
     { href: '/dashboard/trips/new', label: 'Post Trip', icon: CarTaxiFront },
     { href: '/dashboard/pool-requests', label: 'Post Pool Request', icon: UserRoundSearch },
     { href: '/dashboard/trips', label: 'Find Ride', icon: Search },
-    { href: '/dashboard/find-rider', label: 'Find Rider', icon: UserRoundSearch },
-    { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
+    { href: '/dashboard/find-rider', label: 'Find Passenger', icon: UserRoundSearch },
+    { href: '/dashboard/bookings', label: 'My Bookings', icon: MapPinned },
     { href: '/dashboard/contact', label: 'Contact us', icon: Mail },
   ];
 

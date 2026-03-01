@@ -15,6 +15,7 @@ import { formatDateTime } from '@/lib/format';
 
 type PoolRequest = {
   id: string;
+  userId: string;
   fromLocation: string;
   toLocation: string;
   route?: string | null;
@@ -28,7 +29,21 @@ type PoolRequest = {
   };
 };
 
-export function PoolRequestBoard() {
+type PoolRequestBoardProps = {
+  currentUserId: string;
+  showComposer?: boolean;
+  listTitle?: string;
+  listDescription?: string;
+  emptyStateText?: string;
+};
+
+export function PoolRequestBoard({
+  currentUserId,
+  showComposer = true,
+  listTitle = 'Open passenger requests',
+  listDescription = 'Browse posted pool requests from residents who need a seat.',
+  emptyStateText = 'No open passenger requests.',
+}: PoolRequestBoardProps) {
   const defaultTravel = new Date(Date.now() + 30 * 60 * 1000);
   const [from, setFrom] = useState('Panchsheel Greens 2');
   const [to, setTo] = useState('');
@@ -37,7 +52,8 @@ export function PoolRequestBoard() {
   const [travelTime, setTravelTime] = useState(toTimeInputValue(defaultTravel));
   const [seatsNeeded, setSeatsNeeded] = useState('1');
   const [poolRequests, setPoolRequests] = useState<PoolRequest[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const [deletingId, setDeletingId] = useState('');
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -60,7 +76,7 @@ export function PoolRequestBoard() {
       return;
     }
 
-    setLoading(true);
+    setPosting(true);
     setError('');
 
     try {
@@ -82,76 +98,119 @@ export function PoolRequestBoard() {
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Failed to post request');
     } finally {
-      setLoading(false);
+      setPosting(false);
+    }
+  };
+
+  const onDelete = async (requestId: string) => {
+    const confirmDelete = window.confirm('Delete this pool request?');
+    if (!confirmDelete) {
+      return;
+    }
+
+    setDeletingId(requestId);
+    setError('');
+
+    try {
+      await apiFetch(`/api/pool-requests/${requestId}`, {
+        method: 'DELETE',
+      });
+      await load();
+    } catch (errorValue) {
+      setError(errorValue instanceof Error ? errorValue.message : 'Unable to delete pool request');
+    } finally {
+      setDeletingId('');
     }
   };
 
   return (
-    <div className="grid gap-3 xl:grid-cols-[0.95fr_1.05fr]">
-      <Card className="auth-hero-card xl:sticky xl:top-6">
-        <CardHeader>
-          <CardTitle>Post pool request</CardTitle>
-          <CardDescription>
-            Use when you need a seat and no matching trip exists yet.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <Label>From</Label>
-            <Input value={from} onChange={(event) => setFrom(event.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>To</Label>
-            <Input value={to} onChange={(event) => setTo(event.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Route (optional)</Label>
-            <Input value={route} onChange={(event) => setRoute(event.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Date</Label>
-            <DatePicker value={travelDate} onValueChange={setTravelDate} />
-          </div>
-          <div className="space-y-2">
-            <Label>Time</Label>
-            <TimePicker value={travelTime} onValueChange={setTravelTime} step={300} />
-          </div>
-          <div className="space-y-2">
-            <Label>Seats needed</Label>
-            <Input
-              type="number"
-              min={1}
-              max={4}
-              value={seatsNeeded}
-              onChange={(event) => setSeatsNeeded(event.target.value)}
-            />
-          </div>
-          {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
-          <Button className="w-full" onClick={onPost} disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Post Request
-          </Button>
-        </CardContent>
-      </Card>
+    <div className={showComposer ? 'grid gap-3 xl:grid-cols-[0.95fr_1.05fr]' : 'grid gap-3'}>
+      {showComposer ? (
+        <Card className="auth-hero-card xl:sticky xl:top-6">
+          <CardHeader>
+            <CardTitle>Post pool request</CardTitle>
+            <CardDescription>
+              Use when you need a seat and no matching trip exists yet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <Label>From</Label>
+              <Input value={from} onChange={(event) => setFrom(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>To</Label>
+              <Input value={to} onChange={(event) => setTo(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Route (optional)</Label>
+              <Input value={route} onChange={(event) => setRoute(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <DatePicker value={travelDate} onValueChange={setTravelDate} />
+            </div>
+            <div className="space-y-2">
+              <Label>Time</Label>
+              <TimePicker value={travelTime} onValueChange={setTravelTime} step={300} />
+            </div>
+            <div className="space-y-2">
+              <Label>Seats needed</Label>
+              <Input
+                type="number"
+                min={1}
+                max={4}
+                value={seatsNeeded}
+                onChange={(event) => setSeatsNeeded(event.target.value)}
+              />
+            </div>
+            {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
+            <Button className="w-full" onClick={onPost} disabled={posting}>
+              {posting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Post Request
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="auth-hero-card">
         <CardHeader>
-          <CardTitle>Open requests</CardTitle>
-          <CardDescription>Recent rider demand from society members.</CardDescription>
+          <CardTitle>{listTitle}</CardTitle>
+          <CardDescription>{listDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
+          {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
           {poolRequests.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No open pool requests.</p>
+            <p className="text-sm text-muted-foreground">{emptyStateText}</p>
           ) : null}
           {poolRequests.map((item) => (
-            <div key={item.id} className="auth-tile p-3 text-sm transition hover:bg-accent/60">
-              <p className="font-semibold leading-snug">
-                {item.fromLocation} → {item.toLocation}
-              </p>
+            <div
+              key={item.id}
+              className="auth-tile space-y-2 p-3 text-sm transition hover:bg-accent/60"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-semibold leading-snug">
+                  {item.fromLocation} → {item.toLocation}
+                </p>
+                {item.userId === currentUserId ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => onDelete(item.id)}
+                    disabled={deletingId === item.id}
+                  >
+                    {deletingId === item.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null}
+                    Delete
+                  </Button>
+                ) : null}
+              </div>
               <p className="mt-1 text-xs text-muted-foreground">{item.route || 'Route open'}</p>
               <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(item.travelAt)}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {item.user.profile?.name ?? 'Resident'} ({item.user.profile?.towerFlat ?? 'PG2'})
+                Passenger: {item.user.profile?.name ?? 'Resident'} (
+                {item.user.profile?.towerFlat ?? 'PG2'})
               </p>
               <p className="mt-2 inline-flex rounded-full border border-border bg-white px-2 py-1 text-[0.68rem] font-semibold text-foreground">
                 Seats needed: {item.seatsNeeded}
