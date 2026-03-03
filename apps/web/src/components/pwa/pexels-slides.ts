@@ -8,43 +8,38 @@ export type PwaSlide = {
 
 export const pwaCommuteSlides: PwaSlide[] = [
   {
-    title: 'Move with safety',
-    subtitle: 'Travel with verified PG2 residents you can trust every day.',
-    imageUrl:
-      'https://images.pexels.com/photos/20837335/pexels-photo-20837335.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
-    imageAlt: 'Cars in dense city traffic at dusk',
-    chip: 'Safety',
+    title: 'Built around the PG2 community',
+    subtitle: 'Start carpooling with verified residents from your own neighborhood network.',
+    imageUrl: '/branding/pwa-carousel/pg2-aerial.jpg',
+    imageAlt: 'Aerial view of the PG2 residential towers',
+    chip: 'PG2',
   },
   {
-    title: 'Community-first commute',
-    subtitle: 'Share daily routes with residents from your own neighborhood network.',
-    imageUrl:
-      'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
-    imageAlt: 'People from a community smiling together',
-    chip: 'Community',
+    title: 'Verified residents, trusted rides',
+    subtitle: 'Register, get approved, and coordinate daily travel with confidence.',
+    imageUrl: '/branding/pwa-carousel/pg2-community-drive.jpeg',
+    imageAlt: 'Residents gathered inside the society complex',
+    chip: 'Verified',
   },
   {
-    title: 'Better metro connection',
-    subtitle: 'Plan first-mile and last-mile routes around metro corridors.',
-    imageUrl:
-      'https://images.pexels.com/photos/5323956/pexels-photo-5323956.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
-    imageAlt: 'Urban metro train moving through city infrastructure',
-    chip: 'Metro',
+    title: 'A connected lifestyle',
+    subtitle: 'Share rides with people who already live, move, and meet within PG2.',
+    imageUrl: '/branding/pwa-carousel/pg2-activity-garden.jpeg',
+    imageAlt: 'Community activity area inside the PG2 complex',
+    chip: 'Lifestyle',
   },
   {
-    title: 'Smarter seat sharing',
-    subtitle: 'Post available seats and match with nearby riders quickly.',
-    imageUrl:
-      'https://images.pexels.com/photos/10670668/pexels-photo-10670668.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
-    imageAlt: 'Cars moving on a modern urban road',
-    chip: 'Seat Match',
+    title: 'Post rides in seconds',
+    subtitle: 'Car owners can publish available seats and manage requests from one place.',
+    imageUrl: '/branding/pwa-carousel/pg2-lifestyle-1.avif',
+    imageAlt: 'PG2 lifestyle visual used in the onboarding carousel',
+    chip: 'Post Ride',
   },
   {
-    title: 'Peak-hour reliability',
-    subtitle: 'Reduce dependency on random auto availability during rush hours.',
-    imageUrl:
-      'https://images.pexels.com/photos/28647410/pexels-photo-28647410.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1100&w=1800',
-    imageAlt: 'Urban road with mixed traffic including buses and bikes',
-    chip: 'Rush Hour',
+    title: 'Find rides without the back and forth',
+    subtitle: 'Passengers can discover available options and request a seat quickly.',
+    imageUrl: '/branding/pwa-carousel/pg2-lifestyle-2.avif',
+    imageAlt: 'PG2 lifestyle visual used in the onboarding carousel',
+    chip: 'Find Ride',
   },
 ];
