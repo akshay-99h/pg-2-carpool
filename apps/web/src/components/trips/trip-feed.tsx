@@ -5,19 +5,26 @@ import {
   Clock3,
   LocateFixed,
   MapPinned,
+  Pencil,
   Search,
   Sparkles,
+  Trash2,
   UsersRound,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
 import {
+  combineDateAndTimeToIso,
   isSameInputDate,
   minuteOfDayFromDate,
   minuteOfDayFromInput,
@@ -26,6 +33,7 @@ import {
 } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
+import { createTripSchema } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
 
 const repeatDayLabel: Record<string, string> = {
@@ -66,7 +74,60 @@ type Pagination = {
   totalPages: number;
 };
 
-export function TripFeed({ currentUserId }: { currentUserId: string }) {
+type TripFormField =
+  | 'tripType'
+  | 'repeatDays'
+  | 'from'
+  | 'route'
+  | 'to'
+  | 'departAtIso'
+  | 'seatsAvailable'
+  | 'notes';
+
+type EditTripDraft = {
+  tripType: 'DAILY' | 'ONE_TIME';
+  repeatDays: string[];
+  from: string;
+  route: string;
+  to: string;
+  travelDate: string;
+  travelTime: string;
+  seatsAvailable: string;
+  notes: string;
+};
+
+const repeatDayOptions = [
+  { value: 'MON', label: 'Mon' },
+  { value: 'TUE', label: 'Tue' },
+  { value: 'WED', label: 'Wed' },
+  { value: 'THU', label: 'Thu' },
+  { value: 'FRI', label: 'Fri' },
+  { value: 'SAT', label: 'Sat' },
+  { value: 'SUN', label: 'Sun' },
+] as const;
+
+function createEditDraft(trip: Trip): EditTripDraft {
+  const departAt = new Date(trip.departAt);
+  return {
+    tripType: trip.tripType,
+    repeatDays: trip.repeatDays,
+    from: trip.fromLocation,
+    route: trip.route,
+    to: trip.toLocation,
+    travelDate: toDateInputValue(departAt),
+    travelTime: toTimeInputValue(departAt),
+    seatsAvailable: String(trip.seatsAvailable),
+    notes: trip.notes ?? '',
+  };
+}
+
+export function TripFeed({
+  currentUserId,
+  currentUserRole,
+}: {
+  currentUserId: string;
+  currentUserRole: 'USER' | 'ADMIN';
+}) {
   const [query, setQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -77,6 +138,12 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
   const [error, setError] = useState('');
   const [trips, setTrips] = useState<Trip[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
+  const [editingTripId, setEditingTripId] = useState<string | null>(null);
+  const [editTripDraft, setEditTripDraft] = useState<EditTripDraft | null>(null);
+  const [editFieldErrors, setEditFieldErrors] = useState<Partial<Record<TripFormField, string>>>(
+    {}
+  );
 
   const loadTrips = useCallback(async (search = '', targetPage = 1) => {
     setLoading(true);
@@ -169,6 +236,112 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
       await loadTrips(activeQuery, page);
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Could not request seat');
+    }
+  };
+
+  const deleteTrip = async (tripId: string) => {
+    if (!window.confirm('Delete this trip? This will also remove any related bookings.')) {
+      return;
+    }
+
+    setDeletingTripId(tripId);
+    setError('');
+
+    try {
+      await apiFetch(`/api/trips/${tripId}`, { method: 'DELETE' });
+      toast.success('Trip deleted successfully.');
+
+      const nextPage =
+        pagination && pagination.page > 1 && filteredTrips.length === 1 ? pagination.page - 1 : page;
+
+      if (nextPage !== page) {
+        setPage(nextPage);
+      } else {
+        await loadTrips(activeQuery, page);
+      }
+    } catch (errorValue) {
+      const message = errorValue instanceof Error ? errorValue.message : 'Could not delete trip';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setDeletingTripId(null);
+    }
+  };
+
+  const startEditingTrip = (trip: Trip) => {
+    setEditingTripId(trip.id);
+    setEditTripDraft(createEditDraft(trip));
+    setEditFieldErrors({});
+    setError('');
+  };
+
+  const cancelEditingTrip = () => {
+    setEditingTripId(null);
+    setEditTripDraft(null);
+    setEditFieldErrors({});
+  };
+
+  const saveTrip = async (tripId: string) => {
+    if (!editTripDraft) {
+      return;
+    }
+
+    const departAtIso =
+      editTripDraft.tripType === 'DAILY'
+        ? combineDateAndTimeToIso(toDateInputValue(new Date()), editTripDraft.travelTime)
+        : combineDateAndTimeToIso(editTripDraft.travelDate, editTripDraft.travelTime);
+
+    if (!departAtIso) {
+      setEditFieldErrors((previous) => ({
+        ...previous,
+        departAtIso: 'Travel date/time is required',
+      }));
+      setError('Please choose a valid travel date and time');
+      return;
+    }
+
+    const parsed = createTripSchema.safeParse({
+      tripType: editTripDraft.tripType,
+      repeatDays: editTripDraft.repeatDays,
+      from: editTripDraft.from.trim(),
+      route: editTripDraft.route.trim(),
+      to: editTripDraft.to.trim(),
+      departAtIso,
+      seatsAvailable: Number(editTripDraft.seatsAvailable),
+      notes: editTripDraft.notes.trim() || undefined,
+    });
+
+    if (!parsed.success) {
+      const nextErrors: Partial<Record<TripFormField, string>> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0] as TripFormField | undefined;
+        if (field && !nextErrors[field]) {
+          nextErrors[field] = issue.message;
+        }
+      }
+      setEditFieldErrors(nextErrors);
+      setError('Please fix the highlighted fields.');
+      return;
+    }
+
+    setDeletingTripId(tripId);
+    setError('');
+    setEditFieldErrors({});
+
+    try {
+      await apiFetch(`/api/trips/${tripId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(parsed.data),
+      });
+      toast.success('Trip updated successfully.');
+      cancelEditingTrip();
+      await loadTrips(activeQuery, page);
+    } catch (errorValue) {
+      const message = errorValue instanceof Error ? errorValue.message : 'Could not update trip';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setDeletingTripId(null);
     }
   };
 
@@ -317,6 +490,8 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
       <div className="grid gap-3 xl:grid-cols-2">
         {filteredTrips.map((trip) => {
           const isDriver = trip.driver.id === currentUserId;
+          const canEditTrip = isDriver || currentUserRole === 'ADMIN';
+          const canDeleteTrip = isDriver || currentUserRole === 'ADMIN';
           const request = trip.requests[0];
           const seatsLeft = Math.max(0, trip.seatsAvailable - trip.seatsBooked);
 
@@ -399,30 +574,261 @@ export function TripFeed({ currentUserId }: { currentUserId: string }) {
                   </div>
                 </div>
 
-                {isDriver ? (
-                  <Badge variant="outline">Your trip</Badge>
-                ) : request ? (
-                  <Badge
-                    variant={
-                      request.status === 'CONFIRMED'
-                        ? 'success'
-                        : request.status === 'REJECTED'
-                          ? 'danger'
-                          : 'warning'
-                    }
-                    className={cn('w-fit')}
-                  >
-                    Booking {request.status}
-                  </Badge>
-                ) : (
-                  <Button
-                    onClick={() => requestSeat(trip.id)}
-                    disabled={seatsLeft <= 0}
-                    className="w-full"
-                  >
-                    {seatsLeft <= 0 ? 'No seats left' : 'Book this ride'}
-                  </Button>
-                )}
+                {editingTripId === trip.id && editTripDraft ? (
+                  <div className="space-y-3 rounded-2xl border border-border/70 bg-white p-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Trip Type</Label>
+                        <Select
+                          value={editTripDraft.tripType}
+                          onChange={(event) => {
+                            const value = event.target.value as 'DAILY' | 'ONE_TIME';
+                            setEditTripDraft((current) =>
+                              current
+                                ? {
+                                    ...current,
+                                    tripType: value,
+                                    repeatDays:
+                                      value === 'ONE_TIME'
+                                        ? []
+                                        : current.repeatDays.length > 0
+                                          ? current.repeatDays
+                                          : ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+                                  }
+                                : current
+                            );
+                          }}
+                          className={cn(editFieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        >
+                          <option value="DAILY">Daily Basis</option>
+                          <option value="ONE_TIME">One Time</option>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Seats Available</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={7}
+                          value={editTripDraft.seatsAvailable}
+                          onChange={(event) =>
+                            setEditTripDraft((current) =>
+                              current ? { ...current, seatsAvailable: event.target.value } : current
+                            )
+                          }
+                          className={cn(
+                            editFieldErrors.seatsAvailable ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {editTripDraft.tripType === 'DAILY' ? (
+                      <div className="space-y-2">
+                        <Label>Repeat days</Label>
+                        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                          {repeatDayOptions.map((day) => {
+                            const selected = editTripDraft.repeatDays.includes(day.value);
+                            return (
+                              <button
+                                key={day.value}
+                                type="button"
+                                onClick={() =>
+                                  setEditTripDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          repeatDays: current.repeatDays.includes(day.value)
+                                            ? current.repeatDays.filter((item) => item !== day.value)
+                                            : [...current.repeatDays, day.value],
+                                        }
+                                      : current
+                                  )
+                                }
+                                className={cn(
+                                  'rounded-lg border px-2 py-2 text-xs font-semibold transition',
+                                  selected
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-border bg-white text-muted-foreground hover:bg-accent',
+                                  editFieldErrors.repeatDays ? 'border-red-400' : ''
+                                )}
+                              >
+                                {day.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {editFieldErrors.repeatDays ? (
+                          <p className="text-xs text-red-700">{editFieldErrors.repeatDays}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>From</Label>
+                        <Input
+                          value={editTripDraft.from}
+                          onChange={(event) =>
+                            setEditTripDraft((current) =>
+                              current ? { ...current, from: event.target.value } : current
+                            )
+                          }
+                          className={cn(editFieldErrors.from ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>To</Label>
+                        <Input
+                          value={editTripDraft.to}
+                          onChange={(event) =>
+                            setEditTripDraft((current) =>
+                              current ? { ...current, to: event.target.value } : current
+                            )
+                          }
+                          className={cn(editFieldErrors.to ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Route details</Label>
+                      <Input
+                        value={editTripDraft.route}
+                        onChange={(event) =>
+                          setEditTripDraft((current) =>
+                            current ? { ...current, route: event.target.value } : current
+                          )
+                        }
+                        className={cn(editFieldErrors.route ? 'border-red-500 ring-1 ring-red-300' : '')}
+                      />
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {editTripDraft.tripType === 'ONE_TIME' ? (
+                        <div className="space-y-2">
+                          <Label>Travel Date</Label>
+                          <DatePicker
+                            value={editTripDraft.travelDate}
+                            onValueChange={(value) =>
+                              setEditTripDraft((current) =>
+                                current ? { ...current, travelDate: value } : current
+                              )
+                            }
+                            className={cn(
+                              editFieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : ''
+                            )}
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label>Daily schedule</Label>
+                          <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary">
+                            This ride repeats on the selected weekdays.
+                          </div>
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        <Label>{editTripDraft.tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}</Label>
+                        <TimePicker
+                          value={editTripDraft.travelTime}
+                          onValueChange={(value) =>
+                            setEditTripDraft((current) =>
+                              current ? { ...current, travelTime: value } : current
+                            )
+                          }
+                          step={300}
+                          className={cn(
+                            editFieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
+                        />
+                        {editFieldErrors.departAtIso ? (
+                          <p className="text-xs text-red-700">{editFieldErrors.departAtIso}</p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Notes</Label>
+                      <Textarea
+                        value={editTripDraft.notes}
+                        onChange={(event) =>
+                          setEditTripDraft((current) =>
+                            current ? { ...current, notes: event.target.value } : current
+                          )
+                        }
+                        className={cn(editFieldErrors.notes ? 'border-red-500 ring-1 ring-red-300' : '')}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelEditingTrip}
+                        disabled={deletingTripId === trip.id}
+                      >
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={() => saveTrip(trip.id)} disabled={deletingTripId === trip.id}>
+                        {deletingTripId === trip.id ? 'Saving...' : 'Save Trip'}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-wrap gap-2">
+                  {isDriver ? (
+                    <Badge variant="outline">Your trip</Badge>
+                  ) : request ? (
+                    <Badge
+                      variant={
+                        request.status === 'CONFIRMED'
+                          ? 'success'
+                          : request.status === 'REJECTED'
+                            ? 'danger'
+                            : 'warning'
+                      }
+                      className={cn('w-fit')}
+                    >
+                      Booking {request.status}
+                    </Badge>
+                  ) : (
+                    <Button
+                      onClick={() => requestSeat(trip.id)}
+                      disabled={seatsLeft <= 0}
+                      className="flex-1"
+                    >
+                      {seatsLeft <= 0 ? 'No seats left' : 'Book this ride'}
+                    </Button>
+                  )}
+
+                  {canEditTrip ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => startEditingTrip(trip)}
+                      disabled={deletingTripId === trip.id}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit trip
+                    </Button>
+                  ) : null}
+
+                  {canDeleteTrip ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => deleteTrip(trip.id)}
+                      disabled={deletingTripId === trip.id}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {deletingTripId === trip.id ? 'Deleting...' : 'Delete trip'}
+                    </Button>
+                  ) : null}
+                </div>
               </CardContent>
             </Card>
           );

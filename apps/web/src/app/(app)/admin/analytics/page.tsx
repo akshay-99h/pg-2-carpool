@@ -284,6 +284,13 @@ export default async function AdminAnalyticsPage({
               <Link href="/admin/analytics">Clear</Link>
             </Button>
           </form>
+          <div className="flex justify-end">
+            <Button asChild variant="outline">
+              <Link href={query ? `/api/admin/trips/export?q=${encodeURIComponent(query)}` : '/api/admin/trips/export'}>
+                Export Trips XLSX
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

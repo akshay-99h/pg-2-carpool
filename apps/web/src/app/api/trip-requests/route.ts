@@ -12,7 +12,7 @@ export async function GET() {
     return forbidden('Account approval pending');
   }
 
-  const [incoming, outgoing] = await Promise.all([
+  const [incoming, outgoing, myTrips] = await Promise.all([
     db.tripRequest.findMany({
       where: {
         trip: {
@@ -42,7 +42,27 @@ export async function GET() {
       },
       orderBy: { createdAt: 'desc' },
     }),
+    db.trip.findMany({
+      where: {
+        driverId: user.id,
+      },
+      include: {
+        repeatDays: {
+          select: {
+            day: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
   ]);
 
-  return NextResponse.json({ incoming, outgoing });
+  return NextResponse.json({
+    incoming,
+    outgoing,
+    myTrips: myTrips.map((trip) => ({
+      ...trip,
+      repeatDays: trip.repeatDays.map((item) => item.day),
+    })),
+  });
 }

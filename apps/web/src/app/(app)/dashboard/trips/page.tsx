@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { TripFeed } from '@/components/trips/trip-feed';
+import { TripPostedToast } from '@/components/trips/trip-posted-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
@@ -16,6 +17,7 @@ export default async function TripsPage({
 
   return (
     <div className="space-y-3">
+      <TripPostedToast />
       {posted ? (
         <Card className="border-emerald-300 bg-emerald-50">
           <CardContent className="p-4 text-sm font-medium text-emerald-900">
@@ -39,7 +41,7 @@ export default async function TripsPage({
       <Button asChild className="w-full sm:hidden">
         <Link href="/dashboard/trips/new">Post Trip</Link>
       </Button>
-      <TripFeed currentUserId={user.id} />
+      <TripFeed currentUserId={user.id} currentUserRole={user.role} />
     </div>
   );
 }

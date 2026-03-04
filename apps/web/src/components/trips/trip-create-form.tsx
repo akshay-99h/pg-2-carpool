@@ -1,7 +1,6 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,6 @@ const repeatDayOptions = [
 ] as const;
 
 export function TripCreateForm() {
-  const router = useRouter();
   const defaultDeparture = new Date(Date.now() + 30 * 60 * 1000);
   const [tripType, setTripType] = useState<'DAILY' | 'ONE_TIME'>('DAILY');
   const [from, setFrom] = useState('Panchsheel Greens 2');
@@ -103,9 +101,7 @@ export function TripCreateForm() {
         }),
       });
 
-      // Use replace instead of push to avoid navigation stack issues in PWA/mobile
-      router.replace('/dashboard/trips?posted=1');
-      router.refresh();
+      window.location.assign('/dashboard/trips?posted=1');
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Failed to create trip');
     } finally {

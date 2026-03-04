@@ -5,6 +5,7 @@ import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 import { QueryProvider } from '@/components/providers/query-provider';
+import { ToastProvider } from '@/components/providers/toast-provider';
 import { PwaUpdateBanner } from '@/components/pwa-update-banner';
 
 import './globals.css';
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         className={`${inter.variable} ${plusJakartaSans.variable} bg-background font-body text-foreground antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
+        <ToastProvider />
         <Analytics />
         <PwaUpdateBanner />
         <Script id="sw-register" strategy="afterInteractive">
