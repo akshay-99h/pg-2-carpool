@@ -17,6 +17,7 @@ export default async function FindPassengerPage() {
       </Card>
       <PoolRequestBoard
         currentUserId={user.id}
+        currentUserRole={user.role}
         showComposer={false}
         listTitle="Open passenger requests"
         listDescription="Passenger demand posts from residents looking for a matching trip."

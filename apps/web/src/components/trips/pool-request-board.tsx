@@ -29,8 +29,18 @@ type PoolRequest = {
   };
 };
 
+type PoolRequestDraft = {
+  from: string;
+  to: string;
+  route: string;
+  travelDate: string;
+  travelTime: string;
+  seatsNeeded: string;
+};
+
 type PoolRequestBoardProps = {
   currentUserId: string;
+  currentUserRole: 'USER' | 'ADMIN';
   showComposer?: boolean;
   listTitle?: string;
   listDescription?: string;
@@ -39,6 +49,7 @@ type PoolRequestBoardProps = {
 
 export function PoolRequestBoard({
   currentUserId,
+  currentUserRole,
   showComposer = true,
   listTitle = 'Open passenger requests',
   listDescription = 'Browse posted pool requests from residents who need a seat.',
@@ -54,6 +65,9 @@ export function PoolRequestBoard({
   const [poolRequests, setPoolRequests] = useState<PoolRequest[]>([]);
   const [posting, setPosting] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [editingId, setEditingId] = useState('');
+  const [savingId, setSavingId] = useState('');
+  const [draft, setDraft] = useState<PoolRequestDraft | null>(null);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -102,9 +116,9 @@ export function PoolRequestBoard({
     }
   };
 
-  const onDelete = async (requestId: string) => {
-    const confirmDelete = window.confirm('Delete this pool request?');
-    if (!confirmDelete) {
+  const onRevoke = async (requestId: string) => {
+    const confirmRevoke = window.confirm('Revoke this pool request?');
+    if (!confirmRevoke) {
       return;
     }
 
@@ -117,9 +131,62 @@ export function PoolRequestBoard({
       });
       await load();
     } catch (errorValue) {
-      setError(errorValue instanceof Error ? errorValue.message : 'Unable to delete pool request');
+      setError(errorValue instanceof Error ? errorValue.message : 'Unable to revoke pool request');
     } finally {
       setDeletingId('');
+    }
+  };
+
+  const onStartEdit = (item: PoolRequest) => {
+    const travelAt = new Date(item.travelAt);
+    setEditingId(item.id);
+    setDraft({
+      from: item.fromLocation,
+      to: item.toLocation,
+      route: item.route ?? '',
+      travelDate: toDateInputValue(travelAt),
+      travelTime: toTimeInputValue(travelAt),
+      seatsNeeded: String(item.seatsNeeded),
+    });
+    setError('');
+  };
+
+  const onCancelEdit = () => {
+    setEditingId('');
+    setDraft(null);
+  };
+
+  const onSaveEdit = async (requestId: string) => {
+    if (!draft) {
+      return;
+    }
+
+    const travelAtIso = combineDateAndTimeToIso(draft.travelDate, draft.travelTime);
+    if (!travelAtIso) {
+      setError('Please choose a valid travel date and time.');
+      return;
+    }
+
+    setSavingId(requestId);
+    setError('');
+
+    try {
+      await apiFetch(`/api/pool-requests/${requestId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          from: draft.from,
+          to: draft.to,
+          route: draft.route,
+          travelAtIso,
+          seatsNeeded: Number(draft.seatsNeeded),
+        }),
+      });
+      onCancelEdit();
+      await load();
+    } catch (errorValue) {
+      setError(errorValue instanceof Error ? errorValue.message : 'Unable to update pool request');
+    } finally {
+      setSavingId('');
     }
   };
 
@@ -183,27 +250,44 @@ export function PoolRequestBoard({
           {poolRequests.length === 0 ? (
             <p className="text-sm text-muted-foreground">{emptyStateText}</p>
           ) : null}
-          {poolRequests.map((item) => (
-            <div
-              key={item.id}
-              className="auth-tile space-y-2 p-3 text-sm transition hover:bg-accent/60"
-            >
+          {poolRequests.map((item) => {
+            const isOwner = item.userId === currentUserId;
+            const canEdit = isOwner;
+            const canRevoke = isOwner || currentUserRole === 'ADMIN';
+
+            return (
+              <div
+                key={item.id}
+                className="auth-tile space-y-2 p-3 text-sm transition hover:bg-accent/60"
+              >
               <div className="flex items-start justify-between gap-3">
                 <p className="font-semibold leading-snug">
                   {item.fromLocation} → {item.toLocation}
                 </p>
-                {item.userId === currentUserId ? (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => onDelete(item.id)}
-                    disabled={deletingId === item.id}
-                  >
-                    {deletingId === item.id ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {canRevoke ? (
+                  <div className="flex gap-2">
+                    {canEdit ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onStartEdit(item)}
+                        disabled={deletingId === item.id || savingId === item.id}
+                      >
+                        Edit
+                      </Button>
                     ) : null}
-                    Delete
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onRevoke(item.id)}
+                      disabled={deletingId === item.id || savingId === item.id}
+                    >
+                      {deletingId === item.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Revoke
+                    </Button>
+                  </div>
                 ) : null}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{item.route || 'Route open'}</p>
@@ -215,8 +299,94 @@ export function PoolRequestBoard({
               <p className="mt-2 inline-flex rounded-full border border-border bg-white px-2 py-1 text-[0.68rem] font-semibold text-foreground">
                 Seats needed: {item.seatsNeeded}
               </p>
-            </div>
-          ))}
+              {canEdit && editingId === item.id && draft ? (
+                <div className="mt-2 space-y-2 rounded-xl border border-border bg-white p-3">
+                  <div className="space-y-1">
+                    <Label>From</Label>
+                    <Input
+                      value={draft.from}
+                      onChange={(event) =>
+                        setDraft((previous) =>
+                          previous ? { ...previous, from: event.target.value } : previous
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>To</Label>
+                    <Input
+                      value={draft.to}
+                      onChange={(event) =>
+                        setDraft((previous) =>
+                          previous ? { ...previous, to: event.target.value } : previous
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Route</Label>
+                    <Input
+                      value={draft.route}
+                      onChange={(event) =>
+                        setDraft((previous) =>
+                          previous ? { ...previous, route: event.target.value } : previous
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label>Date</Label>
+                      <DatePicker
+                        value={draft.travelDate}
+                        onValueChange={(value) =>
+                          setDraft((previous) =>
+                            previous ? { ...previous, travelDate: value } : previous
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Time</Label>
+                      <TimePicker
+                        value={draft.travelTime}
+                        onValueChange={(value) =>
+                          setDraft((previous) =>
+                            previous ? { ...previous, travelTime: value } : previous
+                          )
+                        }
+                        step={300}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Seats needed</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={4}
+                      value={draft.seatsNeeded}
+                      onChange={(event) =>
+                        setDraft((previous) =>
+                          previous ? { ...previous, seatsNeeded: event.target.value } : previous
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="outline" onClick={onCancelEdit} disabled={savingId === item.id}>
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={() => onSaveEdit(item.id)} disabled={savingId === item.id}>
+                      {savingId === item.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
     </div>

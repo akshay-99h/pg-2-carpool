@@ -17,6 +17,7 @@ export default async function PoolRequestsPage() {
       </Card>
       <PoolRequestBoard
         currentUserId={user.id}
+        currentUserRole={user.role}
         listTitle="Open pool requests"
         listDescription="Track active pool requests from residents and delete your own posts when plans change."
         emptyStateText="No open pool requests."
