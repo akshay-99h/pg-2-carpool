@@ -1,6 +1,13 @@
 'use client';
 
-import { BarChart3, ContactRound, ShieldCheck, UserCog, UserRoundCheck } from 'lucide-react';
+import {
+  BarChart3,
+  ContactRound,
+  ShieldCheck,
+  SquareStack,
+  UserCog,
+  UserRoundCheck,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,6 +18,7 @@ const links = [
   { href: '/admin/approvals', label: 'Approvals', icon: UserRoundCheck },
   { href: '/admin/ums', label: 'UMS', icon: UserCog },
   { href: '/admin/contacts', label: 'Contacts', icon: ContactRound },
+  { href: '/admin/bookings', label: 'Bookings', icon: SquareStack },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 

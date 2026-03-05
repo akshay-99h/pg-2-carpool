@@ -139,6 +139,7 @@ export function TripFeed({
   const [trips, setTrips] = useState<Trip[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
+  const [revokingRequestId, setRevokingRequestId] = useState<string | null>(null);
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
   const [editTripDraft, setEditTripDraft] = useState<EditTripDraft | null>(null);
   const [editFieldErrors, setEditFieldErrors] = useState<Partial<Record<TripFormField, string>>>(
@@ -265,6 +266,27 @@ export function TripFeed({
       toast.error(message);
     } finally {
       setDeletingTripId(null);
+    }
+  };
+
+  const revokeBooking = async (requestId: string) => {
+    if (!window.confirm('Revoke this booking request?')) {
+      return;
+    }
+
+    setRevokingRequestId(requestId);
+    setError('');
+
+    try {
+      await apiFetch(`/api/trip-requests/${requestId}`, { method: 'DELETE' });
+      toast.success('Booking revoked.');
+      await loadTrips(activeQuery, page);
+    } catch (errorValue) {
+      const message = errorValue instanceof Error ? errorValue.message : 'Could not revoke booking';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setRevokingRequestId(null);
     }
   };
 
@@ -781,18 +803,29 @@ export function TripFeed({
                   {isDriver ? (
                     <Badge variant="outline">Your trip</Badge>
                   ) : request ? (
-                    <Badge
-                      variant={
-                        request.status === 'CONFIRMED'
-                          ? 'success'
-                          : request.status === 'REJECTED'
-                            ? 'danger'
-                            : 'warning'
-                      }
-                      className={cn('w-fit')}
-                    >
-                      Booking {request.status}
-                    </Badge>
+                    <>
+                      <Badge
+                        variant={
+                          request.status === 'CONFIRMED'
+                            ? 'success'
+                            : request.status === 'REJECTED'
+                              ? 'danger'
+                              : 'warning'
+                        }
+                        className={cn('w-fit')}
+                      >
+                        Booking {request.status}
+                      </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => revokeBooking(request.id)}
+                        disabled={revokingRequestId === request.id}
+                      >
+                        {revokingRequestId === request.id ? 'Revoking...' : 'Revoke booking'}
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       onClick={() => requestSeat(trip.id)}

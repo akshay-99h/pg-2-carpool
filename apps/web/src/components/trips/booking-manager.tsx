@@ -193,7 +193,7 @@ export function BookingManager() {
   };
 
   const deleteBooking = async (requestId: string) => {
-    const confirmDelete = window.confirm('Delete this booking request?');
+    const confirmDelete = window.confirm('Revoke this booking request?');
     if (!confirmDelete) {
       return;
     }
@@ -464,7 +464,7 @@ export function BookingManager() {
                       {busyId === item.id ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : null}
-                      Delete Booking
+                      Revoke Booking
                     </Button>
                   </div>
                 </div>
