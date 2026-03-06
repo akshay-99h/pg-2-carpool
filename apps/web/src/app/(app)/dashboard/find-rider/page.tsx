@@ -20,7 +20,7 @@ export default async function FindPassengerPage() {
         currentUserRole={user.role}
         showComposer={false}
         listTitle="Open passenger requests"
-        listDescription="Passenger demand posts from residents looking for a matching trip."
+        listDescription="Passenger demand posts from residents looking for a matching trip, with one-time and repeat-day schedules."
         emptyStateText="No passenger requests are open right now."
       />
     </div>

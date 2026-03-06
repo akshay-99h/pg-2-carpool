@@ -156,6 +156,7 @@ model TripRequest {
 model PoolRequest {
   id           String   @id @default(uuid())
   userId        String
+  tripType      TripType @default(ONE_TIME)
   fromLocation  String
   toLocation    String
   route         String?
@@ -166,8 +167,21 @@ model PoolRequest {
   updatedAt     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repeatDays PoolRequestRepeatDay[]
 
   @@index([travelAt, status])
+}
+
+model PoolRequestRepeatDay {
+  id            String   @id @default(uuid())
+  poolRequestId String
+  day           Weekday
+  createdAt     DateTime @default(now())
+
+  poolRequest PoolRequest @relation(fields: [poolRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([poolRequestId, day])
+  @@index([day])
 }
 
 model ChargeItem {

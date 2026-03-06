@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
 import { poolRequestSchema } from '@/lib/schemas';
+import { TripType, type Weekday } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 import { logAudit } from '@/lib/audit';
 import { forbidden, getCurrentUser, unauthorized } from '@/lib/auth/session';
@@ -37,18 +38,48 @@ export async function PATCH(
     const body = await request.json();
     const parsed = poolRequestSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+      const firstIssue = parsed.error.issues[0];
+      const field =
+        typeof firstIssue?.path?.[0] === 'string' ? (firstIssue.path[0] as string) : undefined;
+      return NextResponse.json(
+        {
+          error: firstIssue?.message ?? 'Invalid pool request data',
+          field,
+        },
+        { status: 400 }
+      );
     }
 
-    const updated = await db.poolRequest.update({
-      where: { id: requestId },
-      data: {
-        fromLocation: parsed.data.from,
-        toLocation: parsed.data.to,
-        route: parsed.data.route,
-        travelAt: new Date(parsed.data.travelAtIso),
-        seatsNeeded: parsed.data.seatsNeeded,
-      },
+    const repeatDays = parsed.data.tripType === TripType.DAILY ? parsed.data.repeatDays : [];
+
+    const updated = await db.$transaction(async (tx) => {
+      await tx.poolRequestRepeatDay.deleteMany({
+        where: { poolRequestId: requestId },
+      });
+
+      return tx.poolRequest.update({
+        where: { id: requestId },
+        data: {
+          tripType: parsed.data.tripType,
+          fromLocation: parsed.data.from,
+          toLocation: parsed.data.to,
+          route: parsed.data.route,
+          travelAt: new Date(parsed.data.travelAtIso),
+          seatsNeeded: parsed.data.seatsNeeded,
+          repeatDays: {
+            create: repeatDays.map((day) => ({
+              day: day as Weekday,
+            })),
+          },
+        },
+        include: {
+          repeatDays: {
+            select: {
+              day: true,
+            },
+          },
+        },
+      });
     });
 
     await logAudit({
@@ -58,7 +89,13 @@ export async function PATCH(
       entityId: requestId,
     });
 
-    return NextResponse.json({ ok: true, poolRequest: updated });
+    return NextResponse.json({
+      ok: true,
+      poolRequest: {
+        ...updated,
+        repeatDays: updated.repeatDays.map((item) => item.day),
+      },
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to update pool request' }, { status: 500 });
