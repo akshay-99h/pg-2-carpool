@@ -16,7 +16,10 @@ export async function GET() {
   }
 
   const poolRequests = await db.poolRequest.findMany({
-    orderBy: { travelAt: 'asc' },
+    where: {
+      status: 'OPEN',
+    },
+    orderBy: { createdAt: 'desc' },
     include: {
       repeatDays: {
         select: {

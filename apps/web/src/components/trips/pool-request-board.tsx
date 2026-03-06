@@ -78,6 +78,18 @@ type PoolRequestDraft = {
   seatsNeeded: string;
 };
 
+type DriverTrip = {
+  id: string;
+  tripType: 'DAILY' | 'ONE_TIME';
+  status: 'ACTIVE' | 'CANCELLED';
+  fromLocation: string;
+  toLocation: string;
+  departAt: string;
+  seatsAvailable: number;
+  seatsBooked: number;
+  repeatDays: string[];
+};
+
 type PoolRequestBoardProps = {
   currentUserId: string;
   currentUserRole: 'USER' | 'ADMIN';
@@ -118,6 +130,24 @@ function getScheduleLabel(tripType: 'DAILY' | 'ONE_TIME', travelAt: string, repe
   return `Repeats: ${repeatLabel} at ${timeLabel}`;
 }
 
+function getTripScheduleLabel(trip: DriverTrip) {
+  if (trip.tripType === 'ONE_TIME') {
+    return formatDateTime(trip.departAt);
+  }
+
+  const repeatLabel =
+    trip.repeatDays.length > 0
+      ? trip.repeatDays.map((day) => repeatDayLabel[day] ?? day).join(', ')
+      : 'Daily';
+
+  const timeLabel = new Date(trip.departAt).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return `Repeats: ${repeatLabel} at ${timeLabel}`;
+}
+
 export function PoolRequestBoard({
   currentUserId,
   currentUserRole,
@@ -138,8 +168,13 @@ export function PoolRequestBoard({
   const [travelTime, setTravelTime] = useState(toTimeInputValue(defaultTravel));
   const [seatsNeeded, setSeatsNeeded] = useState('1');
   const [poolRequests, setPoolRequests] = useState<PoolRequest[]>([]);
+  const [driverTrips, setDriverTrips] = useState<DriverTrip[]>([]);
   const [posting, setPosting] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [intentPanelForId, setIntentPanelForId] = useState('');
+  const [intentTripByRequest, setIntentTripByRequest] = useState<Record<string, string>>({});
+  const [sendingIntentId, setSendingIntentId] = useState('');
+  const [loadingTrips, setLoadingTrips] = useState(false);
   const [editingId, setEditingId] = useState('');
   const [savingId, setSavingId] = useState('');
   const [draft, setDraft] = useState<PoolRequestDraft | null>(null);
@@ -161,6 +196,32 @@ export function PoolRequestBoard({
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadDriverTrips = useCallback(async () => {
+    if (showComposer) {
+      return;
+    }
+
+    setLoadingTrips(true);
+    try {
+      const response = await apiFetch<{ myTrips: DriverTrip[] }>('/api/trip-requests');
+      setDriverTrips(
+        response.myTrips.filter(
+          (trip) => trip.status === 'ACTIVE' && trip.seatsBooked < trip.seatsAvailable
+        )
+      );
+    } catch (errorValue) {
+      setError(errorValue instanceof Error ? errorValue.message : 'Unable to load your trips');
+    } finally {
+      setLoadingTrips(false);
+    }
+  }, [showComposer]);
+
+  useEffect(() => {
+    if (!showComposer) {
+      void loadDriverTrips();
+    }
+  }, [showComposer, loadDriverTrips]);
 
   const onPost = async () => {
     const scheduledDate = tripType === 'DAILY' ? toDateInputValue(new Date()) : travelDate;
@@ -227,6 +288,45 @@ export function PoolRequestBoard({
       setError(errorValue instanceof Error ? errorValue.message : 'Unable to revoke pool request');
     } finally {
       setDeletingId('');
+    }
+  };
+
+  const onToggleIntentPanel = (requestId: string) => {
+    setIntentPanelForId((current) => (current === requestId ? '' : requestId));
+    setIntentTripByRequest((current) => {
+      const firstTrip = driverTrips[0];
+      if (current[requestId] || !firstTrip) {
+        return current;
+      }
+      return {
+        ...current,
+        [requestId]: firstTrip.id,
+      };
+    });
+  };
+
+  const onSendIntent = async (requestId: string) => {
+    const tripId = intentTripByRequest[requestId];
+    if (!tripId) {
+      setError('Select one of your trips to send booking intent.');
+      return;
+    }
+
+    setSendingIntentId(requestId);
+    setError('');
+
+    try {
+      await apiFetch(`/api/pool-requests/${requestId}/intent`, {
+        method: 'POST',
+        body: JSON.stringify({ tripId }),
+      });
+      setIntentPanelForId('');
+      await load();
+      await loadDriverTrips();
+    } catch (errorValue) {
+      setError(errorValue instanceof Error ? errorValue.message : 'Unable to send booking intent');
+    } finally {
+      setSendingIntentId('');
     }
   };
 
@@ -502,6 +602,8 @@ export function PoolRequestBoard({
             const isOwner = item.userId === currentUserId;
             const canEdit = isOwner;
             const canRevoke = isOwner || currentUserRole === 'ADMIN';
+            const canSendIntent = !showComposer && !isOwner;
+            const selectedIntentTripId = intentTripByRequest[item.id] ?? '';
 
             return (
               <div
@@ -556,6 +658,61 @@ export function PoolRequestBoard({
                 <p className="mt-2 inline-flex rounded-full border border-border bg-white px-2 py-1 text-[0.68rem] font-semibold text-foreground">
                   Seats needed: {item.seatsNeeded}
                 </p>
+                {canSendIntent ? (
+                  <div className="mt-2 space-y-2 rounded-xl border border-border bg-white p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                        Driver Action
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onToggleIntentPanel(item.id)}
+                        disabled={loadingTrips || sendingIntentId === item.id}
+                      >
+                        {intentPanelForId === item.id ? 'Hide' : 'Send Booking Intent'}
+                      </Button>
+                    </div>
+                    {loadingTrips ? (
+                      <p className="text-xs text-muted-foreground">Loading your trips...</p>
+                    ) : null}
+                    {!loadingTrips && driverTrips.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Post an active trip with available seats to send intent.
+                      </p>
+                    ) : null}
+                    {intentPanelForId === item.id && driverTrips.length > 0 ? (
+                      <div className="space-y-2">
+                        <Label>Select your trip</Label>
+                        <Select
+                          value={selectedIntentTripId}
+                          onChange={(event) =>
+                            setIntentTripByRequest((current) => ({
+                              ...current,
+                              [item.id]: event.target.value,
+                            }))
+                          }
+                        >
+                          {driverTrips.map((trip) => (
+                            <option key={trip.id} value={trip.id}>
+                              {trip.fromLocation} → {trip.toLocation} ({getTripScheduleLabel(trip)})
+                            </option>
+                          ))}
+                        </Select>
+                        <Button
+                          size="sm"
+                          onClick={() => onSendIntent(item.id)}
+                          disabled={sendingIntentId === item.id}
+                        >
+                          {sendingIntentId === item.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : null}
+                          Notify Passenger
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 {canEdit && editingId === item.id && draft ? (
                   <div className="mt-2 space-y-2 rounded-xl border border-border bg-white p-3">
                     <div className="space-y-1">

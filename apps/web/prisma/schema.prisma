@@ -50,6 +50,11 @@ enum TripRequestStatus {
   REJECTED
 }
 
+enum TripRequestInitiatedBy {
+  RIDER
+  DRIVER
+}
+
 enum ContactStatus {
   OPEN
   IN_PROGRESS
@@ -141,6 +146,8 @@ model TripRequest {
   id        String            @id @default(uuid())
   tripId    String
   riderId   String
+  initiatedBy TripRequestInitiatedBy @default(RIDER)
+  sourcePoolRequestId String?
   note      String?
   status    TripRequestStatus @default(PENDING)
   createdAt DateTime          @default(now())
@@ -148,9 +155,11 @@ model TripRequest {
 
   trip  Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
   rider User @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  sourcePoolRequest PoolRequest? @relation("PoolRequestIntents", fields: [sourcePoolRequestId], references: [id], onDelete: SetNull)
 
   @@unique([tripId, riderId])
   @@index([riderId, status])
+  @@index([sourcePoolRequestId])
 }
 
 model PoolRequest {
@@ -168,6 +177,7 @@ model PoolRequest {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   repeatDays PoolRequestRepeatDay[]
+  intents TripRequest[] @relation("PoolRequestIntents")
 
   @@index([travelAt, status])
 }

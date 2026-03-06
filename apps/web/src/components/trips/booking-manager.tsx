@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 type IncomingRequest = {
   id: string;
+  initiatedBy: 'RIDER' | 'DRIVER';
   status: 'PENDING' | 'CONFIRMED' | 'REJECTED';
   trip: {
     fromLocation: string;
@@ -37,6 +38,7 @@ type IncomingRequest = {
 
 type OutgoingRequest = {
   id: string;
+  initiatedBy: 'RIDER' | 'DRIVER';
   note?: string | null;
   status: 'PENDING' | 'CONFIRMED' | 'REJECTED';
   trip: {
@@ -212,7 +214,9 @@ export function BookingManager() {
   };
 
   const deleteTrip = async (tripId: string) => {
-    const confirmDelete = window.confirm('Delete this trip? This will also remove any related bookings.');
+    const confirmDelete = window.confirm(
+      'Delete this trip? This will also remove any related bookings.'
+    );
     if (!confirmDelete) {
       return;
     }
@@ -351,8 +355,13 @@ export function BookingManager() {
                   Rider: {item.rider.profile?.name ?? 'Resident'} (
                   {item.rider.profile?.towerFlat ?? 'PG2'})
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {item.initiatedBy === 'DRIVER'
+                    ? 'Intent sent by you. Waiting for passenger confirmation.'
+                    : 'Requested by passenger.'}
+                </p>
                 <div className="flex items-center justify-end gap-2">
-                  {item.status === 'PENDING' ? (
+                  {item.status === 'PENDING' && item.initiatedBy === 'RIDER' ? (
                     <>
                       <Button
                         size="sm"
@@ -397,9 +406,14 @@ export function BookingManager() {
             {outgoing.map((item) => (
               <div key={item.id} className="auth-tile p-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold">
-                    {item.trip.fromLocation} → {item.trip.toLocation}
-                  </p>
+                  <div className="space-y-1">
+                    <p className="font-semibold">
+                      {item.trip.fromLocation} → {item.trip.toLocation}
+                    </p>
+                    <Badge variant={item.initiatedBy === 'DRIVER' ? 'outline' : 'secondary'}>
+                      {item.initiatedBy === 'DRIVER' ? 'Driver Intent' : 'Requested by You'}
+                    </Badge>
+                  </div>
                   <Badge
                     variant={
                       item.status === 'CONFIRMED'
@@ -418,6 +432,31 @@ export function BookingManager() {
                 <p className="mt-1 text-muted-foreground">
                   Car owner: {item.trip.driver.profile?.name ?? 'Resident'}
                 </p>
+                {item.status === 'PENDING' && item.initiatedBy === 'DRIVER' ? (
+                  <div className="mt-2 flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => updateStatus(item.id, 'CONFIRMED')}
+                      disabled={busyId === item.id}
+                    >
+                      {busyId === item.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Accept Intent
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateStatus(item.id, 'REJECTED')}
+                      disabled={busyId === item.id}
+                    >
+                      {busyId === item.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Decline
+                    </Button>
+                  </div>
+                ) : null}
                 {item.status === 'CONFIRMED' && item.trip.driver.profile?.mobileNumber ? (
                   <div className="mt-2">
                     <Button asChild size="sm" className="w-full">
@@ -432,41 +471,41 @@ export function BookingManager() {
                   </div>
                 ) : null}
                 <div className="mt-3 space-y-2">
-                  <Input
-                    value={noteDrafts[item.id] ?? ''}
-                    onChange={(event) =>
-                      setNoteDrafts((previous) => ({
-                        ...previous,
-                        [item.id]: event.target.value,
-                      }))
-                    }
-                    placeholder="Booking note for car owner"
-                    disabled={item.status !== 'PENDING' || busyId === item.id}
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => saveNote(item.id)}
-                      disabled={item.status !== 'PENDING' || busyId === item.id}
-                    >
-                      {busyId === item.id ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : null}
-                      Save Note
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteBooking(item.id)}
-                      disabled={busyId === item.id}
-                    >
-                      {busyId === item.id ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : null}
-                      Revoke Booking
-                    </Button>
-                  </div>
+                  {item.initiatedBy === 'RIDER' ? (
+                    <>
+                      <Input
+                        value={noteDrafts[item.id] ?? ''}
+                        onChange={(event) =>
+                          setNoteDrafts((previous) => ({
+                            ...previous,
+                            [item.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Booking note for car owner"
+                        disabled={item.status !== 'PENDING' || busyId === item.id}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => saveNote(item.id)}
+                        disabled={item.status !== 'PENDING' || busyId === item.id}
+                      >
+                        {busyId === item.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
+                        Save Note
+                      </Button>
+                    </>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => deleteBooking(item.id)}
+                    disabled={busyId === item.id}
+                  >
+                    {busyId === item.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Revoke Booking
+                  </Button>
                 </div>
               </div>
             ))}
@@ -508,7 +547,9 @@ export function BookingManager() {
                     {trip.status}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground">{trip.route || 'Route details not provided'}</p>
+                <p className="text-muted-foreground">
+                  {trip.route || 'Route details not provided'}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Seats booked: {trip.seatsBooked}/{trip.seatsAvailable}
                 </p>
@@ -536,7 +577,9 @@ export function BookingManager() {
                                 : current
                             );
                           }}
-                          className={cn(editFieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         >
                           <option value="DAILY">Daily Basis</option>
                           <option value="ONE_TIME">One Time</option>
@@ -555,7 +598,9 @@ export function BookingManager() {
                             )
                           }
                           className={cn(
-                            editFieldErrors.seatsAvailable ? 'border-red-500 ring-1 ring-red-300' : ''
+                            editFieldErrors.seatsAvailable
+                              ? 'border-red-500 ring-1 ring-red-300'
+                              : ''
                           )}
                         />
                       </div>
@@ -577,7 +622,9 @@ export function BookingManager() {
                                       ? {
                                           ...current,
                                           repeatDays: current.repeatDays.includes(day.value)
-                                            ? current.repeatDays.filter((item) => item !== day.value)
+                                            ? current.repeatDays.filter(
+                                                (item) => item !== day.value
+                                              )
                                             : [...current.repeatDays, day.value],
                                         }
                                       : current
@@ -612,7 +659,9 @@ export function BookingManager() {
                               current ? { ...current, from: event.target.value } : current
                             )
                           }
-                          className={cn(editFieldErrors.from ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.from ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         />
                       </div>
                       <div className="space-y-2">
@@ -624,7 +673,9 @@ export function BookingManager() {
                               current ? { ...current, to: event.target.value } : current
                             )
                           }
-                          className={cn(editFieldErrors.to ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.to ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         />
                       </div>
                     </div>
@@ -638,7 +689,9 @@ export function BookingManager() {
                             current ? { ...current, route: event.target.value } : current
                           )
                         }
-                        className={cn(editFieldErrors.route ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        className={cn(
+                          editFieldErrors.route ? 'border-red-500 ring-1 ring-red-300' : ''
+                        )}
                       />
                     </div>
 
@@ -654,7 +707,9 @@ export function BookingManager() {
                               )
                             }
                             className={cn(
-                              editFieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : ''
+                              editFieldErrors.departAtIso
+                                ? 'border-red-500 ring-1 ring-red-300'
+                                : ''
                             )}
                           />
                         </div>
@@ -667,7 +722,9 @@ export function BookingManager() {
                         </div>
                       )}
                       <div className="space-y-2">
-                        <Label>{editTripDraft.tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}</Label>
+                        <Label>
+                          {editTripDraft.tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}
+                        </Label>
                         <TimePicker
                           value={editTripDraft.travelTime}
                           onValueChange={(value) =>
@@ -695,7 +752,9 @@ export function BookingManager() {
                             current ? { ...current, notes: event.target.value } : current
                           )
                         }
-                        className={cn(editFieldErrors.notes ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        className={cn(
+                          editFieldErrors.notes ? 'border-red-500 ring-1 ring-red-300' : ''
+                        )}
                       />
                     </div>
 
@@ -708,8 +767,14 @@ export function BookingManager() {
                       >
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={() => saveTrip(trip.id)} disabled={busyId === trip.id}>
-                        {busyId === trip.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      <Button
+                        size="sm"
+                        onClick={() => saveTrip(trip.id)}
+                        disabled={busyId === trip.id}
+                      >
+                        {busyId === trip.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
                         Save Trip
                       </Button>
                     </div>
@@ -731,7 +796,11 @@ export function BookingManager() {
                     onClick={() => deleteTrip(trip.id)}
                     disabled={busyId === trip.id}
                   >
-                    {busyId === trip.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    {busyId === trip.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
                     Delete Trip
                   </Button>
                 </div>

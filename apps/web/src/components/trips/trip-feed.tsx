@@ -23,14 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
-import {
-  combineDateAndTimeToIso,
-  isSameInputDate,
-  minuteOfDayFromDate,
-  minuteOfDayFromInput,
-  toDateInputValue,
-  toTimeInputValue,
-} from '@/lib/date-time';
+import { combineDateAndTimeToIso, toDateInputValue, toTimeInputValue } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
 import { createTripSchema } from '@/lib/schemas';
@@ -146,74 +139,47 @@ export function TripFeed({
     {}
   );
 
-  const loadTrips = useCallback(async (search = '', targetPage = 1) => {
-    setLoading(true);
-    setError('');
+  const loadTrips = useCallback(
+    async (targetPage = 1) => {
+      setLoading(true);
+      setError('');
 
-    try {
-      const params = new URLSearchParams();
-      if (search) {
-        params.set('q', search);
+      try {
+        const params = new URLSearchParams();
+        const effectiveTravelDate =
+          travelTime && !travelDate ? toDateInputValue(new Date()) : travelDate;
+        if (activeQuery) {
+          params.set('q', activeQuery);
+        }
+        if (fromLocation.trim()) {
+          params.set('from', fromLocation.trim());
+        }
+        if (effectiveTravelDate) {
+          params.set('travelDate', effectiveTravelDate);
+        }
+        if (travelTime) {
+          params.set('travelTime', travelTime);
+        }
+        params.set('page', String(targetPage));
+        params.set('pageSize', '20');
+
+        const response = await apiFetch<{ trips: Trip[]; pagination: Pagination }>(
+          `/api/trips?${params.toString()}`
+        );
+        setTrips(response.trips);
+        setPagination(response.pagination);
+      } catch (errorValue) {
+        setError(errorValue instanceof Error ? errorValue.message : 'Unable to fetch trips');
+      } finally {
+        setLoading(false);
       }
-      params.set('page', String(targetPage));
-      params.set('pageSize', '20');
-
-      const response = await apiFetch<{ trips: Trip[]; pagination: Pagination }>(
-        `/api/trips?${params.toString()}`
-      );
-      setTrips(response.trips);
-      setPagination(response.pagination);
-    } catch (errorValue) {
-      setError(errorValue instanceof Error ? errorValue.message : 'Unable to fetch trips');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [activeQuery, fromLocation, travelDate, travelTime]
+  );
 
   useEffect(() => {
-    void loadTrips(activeQuery, page);
-  }, [activeQuery, loadTrips, page]);
-
-  const filteredTrips = useMemo(() => {
-    const fromFilter = fromLocation.trim().toLowerCase();
-    const selectedMinute = minuteOfDayFromInput(travelTime);
-
-    const withFilters = trips.filter((trip) => {
-      const tripDepartAt = new Date(trip.departAt);
-      if (fromFilter && !trip.fromLocation.toLowerCase().includes(fromFilter)) {
-        return false;
-      }
-
-      if (travelDate && !isSameInputDate(tripDepartAt, travelDate)) {
-        return false;
-      }
-
-      if (selectedMinute !== null) {
-        const tripMinute = minuteOfDayFromDate(tripDepartAt);
-        if (Math.abs(tripMinute - selectedMinute) > 120) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    return withFilters.sort((left, right) => {
-      const leftTime = new Date(left.departAt).getTime();
-      const rightTime = new Date(right.departAt).getTime();
-
-      if (selectedMinute === null) {
-        return leftTime - rightTime;
-      }
-
-      const leftDistance = Math.abs(minuteOfDayFromDate(new Date(left.departAt)) - selectedMinute);
-      const rightDistance = Math.abs(
-        minuteOfDayFromDate(new Date(right.departAt)) - selectedMinute
-      );
-
-      return leftDistance - rightDistance;
-    });
-  }, [fromLocation, travelDate, travelTime, trips]);
+    void loadTrips(page);
+  }, [loadTrips, page]);
 
   const popularDestinations = useMemo(() => {
     const seen = new Set<string>();
@@ -232,11 +198,14 @@ export function TripFeed({
   }, [trips]);
 
   const requestSeat = async (tripId: string) => {
+    setLoading(true);
     try {
       await apiFetch(`/api/trips/${tripId}/request`, { method: 'POST' });
-      await loadTrips(activeQuery, page);
+      await loadTrips(page);
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Could not request seat');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -253,12 +222,12 @@ export function TripFeed({
       toast.success('Trip deleted successfully.');
 
       const nextPage =
-        pagination && pagination.page > 1 && filteredTrips.length === 1 ? pagination.page - 1 : page;
+        pagination && pagination.page > 1 && trips.length === 1 ? pagination.page - 1 : page;
 
       if (nextPage !== page) {
         setPage(nextPage);
       } else {
-        await loadTrips(activeQuery, page);
+        await loadTrips(page);
       }
     } catch (errorValue) {
       const message = errorValue instanceof Error ? errorValue.message : 'Could not delete trip';
@@ -280,7 +249,7 @@ export function TripFeed({
     try {
       await apiFetch(`/api/trip-requests/${requestId}`, { method: 'DELETE' });
       toast.success('Booking revoked.');
-      await loadTrips(activeQuery, page);
+      await loadTrips(page);
     } catch (errorValue) {
       const message = errorValue instanceof Error ? errorValue.message : 'Could not revoke booking';
       setError(message);
@@ -357,7 +326,7 @@ export function TripFeed({
       });
       toast.success('Trip updated successfully.');
       cancelEditingTrip();
-      await loadTrips(activeQuery, page);
+      await loadTrips(page);
     } catch (errorValue) {
       const message = errorValue instanceof Error ? errorValue.message : 'Could not update trip';
       setError(message);
@@ -371,11 +340,13 @@ export function TripFeed({
     const now = new Date();
     setTravelDate(toDateInputValue(now));
     setTravelTime(toTimeInputValue(now));
+    setPage(1);
   };
 
   const clearFilters = () => {
     setTravelDate('');
     setTravelTime('');
+    setPage(1);
   };
 
   return (
@@ -400,7 +371,10 @@ export function TripFeed({
               <Input
                 className="pl-9"
                 value={fromLocation}
-                onChange={(event) => setFromLocation(event.target.value)}
+                onChange={(event) => {
+                  setFromLocation(event.target.value);
+                  setPage(1);
+                }}
                 placeholder="Pickup from"
               />
             </div>
@@ -418,13 +392,19 @@ export function TripFeed({
           <div className="grid gap-2 sm:grid-cols-2">
             <DatePicker
               value={travelDate}
-              onValueChange={setTravelDate}
+              onValueChange={(value) => {
+                setTravelDate(value);
+                setPage(1);
+              }}
               placeholder="Travel date"
               aria-label="Travel date"
             />
             <TimePicker
               value={travelTime}
-              onValueChange={setTravelTime}
+              onValueChange={(value) => {
+                setTravelTime(value);
+                setPage(1);
+              }}
               step={300}
               placeholder="Travel time"
               aria-label="Travel time"
@@ -472,7 +452,7 @@ export function TripFeed({
       {loading ? <p className="text-sm text-muted-foreground">Loading rides...</p> : null}
       {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
 
-      {!loading && filteredTrips.length === 0 ? (
+      {!loading && trips.length === 0 ? (
         <Card>
           <CardContent className="space-y-2 p-5 text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">No matching rides found</p>
@@ -510,7 +490,7 @@ export function TripFeed({
       ) : null}
 
       <div className="grid gap-3 xl:grid-cols-2">
-        {filteredTrips.map((trip) => {
+        {trips.map((trip) => {
           const isDriver = trip.driver.id === currentUserId;
           const canEditTrip = isDriver || currentUserRole === 'ADMIN';
           const canDeleteTrip = isDriver || currentUserRole === 'ADMIN';
@@ -620,7 +600,9 @@ export function TripFeed({
                                 : current
                             );
                           }}
-                          className={cn(editFieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.tripType ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         >
                           <option value="DAILY">Daily Basis</option>
                           <option value="ONE_TIME">One Time</option>
@@ -639,7 +621,9 @@ export function TripFeed({
                             )
                           }
                           className={cn(
-                            editFieldErrors.seatsAvailable ? 'border-red-500 ring-1 ring-red-300' : ''
+                            editFieldErrors.seatsAvailable
+                              ? 'border-red-500 ring-1 ring-red-300'
+                              : ''
                           )}
                         />
                       </div>
@@ -661,7 +645,9 @@ export function TripFeed({
                                       ? {
                                           ...current,
                                           repeatDays: current.repeatDays.includes(day.value)
-                                            ? current.repeatDays.filter((item) => item !== day.value)
+                                            ? current.repeatDays.filter(
+                                                (item) => item !== day.value
+                                              )
                                             : [...current.repeatDays, day.value],
                                         }
                                       : current
@@ -696,7 +682,9 @@ export function TripFeed({
                               current ? { ...current, from: event.target.value } : current
                             )
                           }
-                          className={cn(editFieldErrors.from ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.from ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         />
                       </div>
                       <div className="space-y-2">
@@ -708,7 +696,9 @@ export function TripFeed({
                               current ? { ...current, to: event.target.value } : current
                             )
                           }
-                          className={cn(editFieldErrors.to ? 'border-red-500 ring-1 ring-red-300' : '')}
+                          className={cn(
+                            editFieldErrors.to ? 'border-red-500 ring-1 ring-red-300' : ''
+                          )}
                         />
                       </div>
                     </div>
@@ -722,7 +712,9 @@ export function TripFeed({
                             current ? { ...current, route: event.target.value } : current
                           )
                         }
-                        className={cn(editFieldErrors.route ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        className={cn(
+                          editFieldErrors.route ? 'border-red-500 ring-1 ring-red-300' : ''
+                        )}
                       />
                     </div>
 
@@ -738,7 +730,9 @@ export function TripFeed({
                               )
                             }
                             className={cn(
-                              editFieldErrors.departAtIso ? 'border-red-500 ring-1 ring-red-300' : ''
+                              editFieldErrors.departAtIso
+                                ? 'border-red-500 ring-1 ring-red-300'
+                                : ''
                             )}
                           />
                         </div>
@@ -751,7 +745,9 @@ export function TripFeed({
                         </div>
                       )}
                       <div className="space-y-2">
-                        <Label>{editTripDraft.tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}</Label>
+                        <Label>
+                          {editTripDraft.tripType === 'DAILY' ? 'Departure Time' : 'Travel Time'}
+                        </Label>
                         <TimePicker
                           value={editTripDraft.travelTime}
                           onValueChange={(value) =>
@@ -779,7 +775,9 @@ export function TripFeed({
                             current ? { ...current, notes: event.target.value } : current
                           )
                         }
-                        className={cn(editFieldErrors.notes ? 'border-red-500 ring-1 ring-red-300' : '')}
+                        className={cn(
+                          editFieldErrors.notes ? 'border-red-500 ring-1 ring-red-300' : ''
+                        )}
                       />
                     </div>
 
@@ -792,7 +790,11 @@ export function TripFeed({
                       >
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={() => saveTrip(trip.id)} disabled={deletingTripId === trip.id}>
+                      <Button
+                        size="sm"
+                        onClick={() => saveTrip(trip.id)}
+                        disabled={deletingTripId === trip.id}
+                      >
                         {deletingTripId === trip.id ? 'Saving...' : 'Save Trip'}
                       </Button>
                     </div>

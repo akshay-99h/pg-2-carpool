@@ -1,4 +1,4 @@
-import { TripRequestStatus } from '@prisma/client';
+import { TripRequestInitiatedBy, TripRequestStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -55,6 +55,7 @@ export async function PATCH(
     const isRiderOrAdmin = existing.riderId === user.id || user.role === 'ADMIN';
     const hasStatusUpdate = Boolean(parsed.data.status);
     const hasNoteUpdate = parsed.data.note !== undefined;
+    const statusManagedByRider = existing.initiatedBy === TripRequestInitiatedBy.DRIVER;
 
     if (hasStatusUpdate && hasNoteUpdate) {
       return NextResponse.json(
@@ -64,8 +65,12 @@ export async function PATCH(
     }
 
     if (hasStatusUpdate) {
-      if (!isDriverOrAdmin) {
-        return forbidden('Only car owner/admin can update request status');
+      if (statusManagedByRider && !isRiderOrAdmin) {
+        return forbidden('Only passenger/admin can update this booking intent');
+      }
+
+      if (!statusManagedByRider && !isDriverOrAdmin) {
+        return forbidden('Only car owner/admin can update booking request');
       }
 
       const updated = await db.$transaction(async (tx) => {
@@ -75,6 +80,7 @@ export async function PATCH(
             id: true,
             status: true,
             tripId: true,
+            sourcePoolRequestId: true,
           },
         });
 
@@ -135,6 +141,24 @@ export async function PATCH(
               seatsBooked: {
                 decrement: 1,
               },
+            },
+          });
+        }
+
+        if (shouldIncrementSeats && currentRequest.sourcePoolRequestId) {
+          await tx.poolRequest.update({
+            where: { id: currentRequest.sourcePoolRequestId },
+            data: {
+              status: 'BOOKED',
+            },
+          });
+        }
+
+        if (shouldDecrementSeats && currentRequest.sourcePoolRequestId) {
+          await tx.poolRequest.update({
+            where: { id: currentRequest.sourcePoolRequestId },
+            data: {
+              status: 'OPEN',
             },
           });
         }
@@ -227,6 +251,15 @@ export async function DELETE(
             seatsBooked: {
               decrement: 1,
             },
+          },
+        });
+      }
+
+      if (existing.sourcePoolRequestId && existing.status === TripRequestStatus.CONFIRMED) {
+        await tx.poolRequest.update({
+          where: { id: existing.sourcePoolRequestId },
+          data: {
+            status: 'OPEN',
           },
         });
       }

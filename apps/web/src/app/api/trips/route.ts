@@ -1,5 +1,5 @@
 import { createTripSchema } from '@/lib/schemas';
-import { TripType, type Weekday } from '@prisma/client';
+import { type Prisma, TripType, type Weekday } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { logAudit } from '@/lib/audit';
@@ -29,6 +29,9 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q')?.trim() || '';
+  const from = searchParams.get('from')?.trim() || '';
+  const travelDate = searchParams.get('travelDate')?.trim() || '';
+  const travelTime = searchParams.get('travelTime')?.trim() || '';
   const page = parsePositiveInteger(searchParams.get('page'), 1);
   const pageSize = Math.min(
     parsePositiveInteger(searchParams.get('pageSize'), TRIPS_PAGE_SIZE_DEFAULT),
@@ -37,33 +40,78 @@ export async function GET(request: Request) {
   const skip = (page - 1) * pageSize;
   const now = new Date();
 
-  const textFilter = q
-    ? {
-        OR: [
-          { fromLocation: { contains: q, mode: 'insensitive' as const } },
-          { route: { contains: q, mode: 'insensitive' as const } },
-          { toLocation: { contains: q, mode: 'insensitive' as const } },
-        ],
+  const andFilters: Prisma.TripWhereInput[] = [
+    {
+      OR: [
+        { tripType: 'DAILY' as const },
+        {
+          tripType: 'ONE_TIME' as const,
+          departAt: {
+            gt: now,
+          },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+      ],
+    },
+  ];
+
+  if (q) {
+    andFilters.push({
+      OR: [
+        { fromLocation: { contains: q, mode: 'insensitive' } },
+        { route: { contains: q, mode: 'insensitive' } },
+        { toLocation: { contains: q, mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  if (from) {
+    andFilters.push({
+      fromLocation: {
+        contains: from,
+        mode: 'insensitive',
+      },
+    });
+  }
+
+  if (travelDate) {
+    const dayStart = new Date(`${travelDate}T00:00:00`);
+    if (!Number.isNaN(dayStart.getTime())) {
+      if (travelTime) {
+        const selected = new Date(`${travelDate}T${travelTime}:00`);
+        if (!Number.isNaN(selected.getTime())) {
+          andFilters.push({
+            departAt: {
+              gte: new Date(selected.getTime() - 120 * 60 * 1000),
+              lte: new Date(selected.getTime() + 120 * 60 * 1000),
+            },
+          });
+        } else {
+          const dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          andFilters.push({
+            departAt: {
+              gte: dayStart,
+              lt: dayEnd,
+            },
+          });
+        }
+      } else {
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayEnd.getDate() + 1);
+        andFilters.push({
+          departAt: {
+            gte: dayStart,
+            lt: dayEnd,
+          },
+        });
       }
-    : undefined;
+    }
+  }
 
   const where = {
     status: 'ACTIVE' as const,
-    AND: [
-      {
-        OR: [
-          { tripType: 'DAILY' as const },
-          {
-            tripType: 'ONE_TIME' as const,
-            departAt: {
-              gt: now,
-            },
-            OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
-          },
-        ],
-      },
-      ...(textFilter ? [textFilter] : []),
-    ],
+    AND: andFilters,
   };
 
   const [trips, total] = await Promise.all([
