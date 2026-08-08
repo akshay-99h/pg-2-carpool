@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { FileText, Loader2, Mail, RotateCcw, ShieldCheck } from 'lucide-react';
+import { FileText, Loader2, Mail, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,7 @@ import {
   FieldSeparator,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { trackEvent } from '@/lib/analytics';
 import { apiFetch } from '@/lib/fetcher';
 
 export function LoginForm({
@@ -48,8 +49,10 @@ export function LoginForm({
         method: 'POST',
         body: JSON.stringify({ email }),
       });
+      trackEvent({ name: 'login_otp_requested' });
       setStage('otp');
     } catch (errorValue) {
+      trackEvent({ name: 'login_failed', props: { stage: 'otp_request' } });
       setError(errorValue instanceof Error ? errorValue.message : 'Unable to send OTP');
     } finally {
       setLoading(false);
@@ -65,9 +68,11 @@ export function LoginForm({
         method: 'POST',
         body: JSON.stringify({ email, otp }),
       });
+      trackEvent({ name: 'login_otp_verified' });
       router.push('/dashboard');
       router.refresh();
     } catch (errorValue) {
+      trackEvent({ name: 'login_failed', props: { stage: 'otp_verify' } });
       setError(errorValue instanceof Error ? errorValue.message : 'OTP verification failed');
     } finally {
       setLoading(false);
@@ -99,9 +104,11 @@ export function LoginForm({
             method: 'POST',
             body: JSON.stringify({ credential: response.credential }),
           });
+          trackEvent({ name: 'login_google_completed' });
           router.push('/dashboard');
           router.refresh();
         } catch (errorValue) {
+          trackEvent({ name: 'login_failed', props: { stage: 'google' } });
           setError(errorValue instanceof Error ? errorValue.message : 'Google login failed');
         }
       },
@@ -110,7 +117,9 @@ export function LoginForm({
     googleButtonRef.current.innerHTML = '';
     window.google.accounts.id.renderButton(googleButtonRef.current, {
       type: 'standard',
-      theme: 'filled_blue',
+      // `outline` instead of `filled_blue`: the secondary sign-in path should
+      // not out-shout the primary OTP action, and blue clashes with the brand.
+      theme: 'outline',
       size: 'large',
       shape: 'pill',
       text: 'signin_with',
@@ -151,7 +160,12 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
@@ -178,18 +192,28 @@ export function LoginForm({
                     id="otp"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    // Lets iOS/Android offer the emailed code straight from the
+                    // keyboard instead of making people switch apps to copy it.
+                    autoComplete="one-time-code"
                     placeholder="123456"
                     value={otp}
                     onChange={(event) => setOtp(event.target.value)}
                     maxLength={6}
                     required
                   />
+                  <FieldDescription>
+                    We emailed a 6-digit code to {email}. It expires in a few minutes.
+                  </FieldDescription>
                 </Field>
               ) : null}
 
-              {error ? (
-                <FieldDescription className="text-center text-red-700">{error}</FieldDescription>
-              ) : null}
+              <output aria-live="polite" className="block">
+                {error ? (
+                  <FieldDescription className="text-center text-destructive">
+                    {error}
+                  </FieldDescription>
+                ) : null}
+              </output>
 
               <Field className="grid gap-2">
                 <Button
@@ -233,15 +257,14 @@ export function LoginForm({
                 )}
               </Field>
 
-              <FieldDescription className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
-                <span>By continuing, you agree to the community</span>
-                <Link href="/terms" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
-                  <FileText className="h-3.5 w-3.5" />
-                  Terms and Conditions
-                </Link>
-                <Link href="/terms" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Safety Rules
+              <FieldDescription className="text-center">
+                By continuing, you agree to the community{' '}
+                <Link
+                  href="/terms"
+                  className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                >
+                  <FileText className="h-3.5 w-3.5" aria-hidden />
+                  Terms &amp; Safety Rules
                 </Link>
               </FieldDescription>
             </FieldGroup>
@@ -261,7 +284,9 @@ export function LoginForm({
               className="object-cover mix-blend-screen opacity-75"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/35 bg-black/20 p-4 backdrop-blur">
+            {/* Opaque enough that the white copy stays readable whatever the
+                photograph behind it does. */}
+            <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/35 bg-slate-950/60 p-4 backdrop-blur">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/80">
                 Resident-first commute
               </p>

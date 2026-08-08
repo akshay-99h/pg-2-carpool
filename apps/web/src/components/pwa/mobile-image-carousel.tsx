@@ -1,10 +1,11 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 import type { PwaSlide } from './pexels-slides';
@@ -15,6 +16,7 @@ type MobileImageCarouselProps = {
   autoPlayMs?: number;
   mode?: 'default' | 'hero';
   heroContinueHref?: string;
+  onLeave?: () => void;
 };
 
 export function MobileImageCarousel({
@@ -23,6 +25,7 @@ export function MobileImageCarousel({
   autoPlayMs = 4200,
   mode = 'default',
   heroContinueHref = '/login',
+  onLeave,
 }: MobileImageCarouselProps) {
   const router = useRouter();
   const isHero = mode === 'hero';
@@ -39,20 +42,25 @@ export function MobileImageCarousel({
       return;
     }
 
-    // Preload slide images in the background so swipes feel instant.
-    const preloaded = safeSlides.map((slide) => {
-      const image = new Image();
-      image.decoding = 'async';
-      image.src = slide.imageUrl;
-      return image;
-    });
+    // Preload only the neighbouring slides. Eagerly fetching all five cost
+    // ~1MB on the first screen of the app, usually over mobile data.
+    const targets = [index, (index + 1) % total, (index - 1 + total) % total];
+    const preloaded = Array.from(new Set(targets))
+      .map((slideIndex) => safeSlides[slideIndex])
+      .filter((slide): slide is PwaSlide => Boolean(slide))
+      .map((slide) => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = slide.imageUrl;
+        return image;
+      });
 
     return () => {
       for (const image of preloaded) {
         image.src = '';
       }
     };
-  }, [safeSlides]);
+  }, [safeSlides, index, total]);
 
   useEffect(() => {
     if (!autoplay || total <= 1) {
@@ -72,21 +80,19 @@ export function MobileImageCarousel({
   }
 
   const active = safeSlides[index] ?? firstSlide;
-  const isLastSlide = index >= total - 1;
 
-  const goToNextSlide = () => {
-    setAutoplay(false);
-    if (isLastSlide) {
-      router.push(heroContinueHref);
-      return;
-    }
-    setIndex((current) => (current + 1) % total);
+  // The primary CTA is available on every slide, including the first one -
+  // nobody should have to tap through an intro to reach the login.
+  const leaveIntro = (via: 'skip' | 'continue') => {
+    trackEvent({ name: 'pwa_intro_dismissed', props: { via } });
+    onLeave?.();
+    router.push(heroContinueHref);
   };
 
   return (
     <section
       className={cn(
-        'relative overflow-hidden border border-primary/20',
+        'relative touch-pan-y overflow-hidden border border-primary/20',
         isHero ? 'rounded-[2.25rem]' : 'rounded-[2rem]',
         className
       )}
@@ -147,7 +153,15 @@ export function MobileImageCarousel({
         ))}
       </div>
 
-      {!isHero ? (
+      {isHero ? (
+        <button
+          type="button"
+          onClick={() => leaveIntro('skip')}
+          className="absolute right-4 top-[calc(0.65rem+env(safe-area-inset-top))] z-20 inline-flex h-9 items-center rounded-full border border-white/25 bg-black/35 px-3.5 text-sm font-semibold text-white backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        >
+          Skip
+        </button>
+      ) : (
         <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
           <span className="rounded-full border border-white/35 bg-black/25 px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-white">
             {active.chip}
@@ -156,21 +170,26 @@ export function MobileImageCarousel({
             type="button"
             size="icon"
             variant="outline"
+            aria-label={autoplay ? 'Pause slideshow' : 'Play slideshow'}
             className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
             onClick={() => setAutoplay((current) => !current)}
           >
-            {autoplay ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+            {autoplay ? (
+              <Pause className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <Play className="h-3.5 w-3.5" aria-hidden />
+            )}
           </Button>
         </div>
-      ) : null}
+      )}
 
       <div
         className={cn(
           'absolute left-4 right-4 space-y-2 text-white',
-          isHero ? 'bottom-[calc(4.9rem+env(safe-area-inset-bottom))] text-center' : 'bottom-16'
+          isHero ? 'bottom-[calc(6.6rem+env(safe-area-inset-bottom))] text-center' : 'bottom-16'
         )}
       >
-        <p className={cn('font-semibold leading-tight', isHero ? 'text-[2.35rem]' : 'text-2xl')}>
+        <p className={cn('font-semibold leading-tight', isHero ? 'text-[2.1rem]' : 'text-2xl')}>
           {active.title}
         </p>
         <p
@@ -184,7 +203,7 @@ export function MobileImageCarousel({
         className={cn(
           'absolute left-3 right-3 flex items-center gap-2',
           isHero
-            ? 'bottom-[calc(9.4rem+env(safe-area-inset-bottom))] justify-center'
+            ? 'bottom-[calc(5.4rem+env(safe-area-inset-bottom))] justify-center'
             : 'bottom-3 justify-between'
         )}
       >
@@ -202,7 +221,8 @@ export function MobileImageCarousel({
                 slideIndex === index ? 'w-6 bg-white' : 'w-2.5 bg-white/35',
                 isHero ? 'h-2.5 border-white/30' : ''
               )}
-              aria-label={`Go to slide ${slideIndex + 1}`}
+              aria-label={`Go to slide ${slideIndex + 1} of ${total}`}
+              aria-current={slideIndex === index ? 'true' : undefined}
             />
           ))}
         </div>
@@ -213,25 +233,27 @@ export function MobileImageCarousel({
               type="button"
               size="icon"
               variant="outline"
+              aria-label="Previous slide"
               className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
               onClick={() => {
                 setAutoplay(false);
                 setIndex((current) => (current - 1 + total) % total);
               }}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden />
             </Button>
             <Button
               type="button"
               size="icon"
               variant="outline"
+              aria-label="Next slide"
               className="h-8 w-8 rounded-full border-white/40 bg-black/25 text-white hover:bg-black/40"
               onClick={() => {
                 setAutoplay(false);
                 setIndex((current) => (current + 1) % total);
               }}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden />
             </Button>
           </div>
         ) : null}
@@ -241,10 +263,11 @@ export function MobileImageCarousel({
         <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4">
           <Button
             type="button"
-            onClick={goToNextSlide}
-            className="h-12 w-full rounded-2xl border border-primary/30 bg-primary text-base font-semibold text-primary-foreground shadow-[0_16px_28px_-18px_rgba(10,91,55,0.82)] hover:bg-primary/92"
+            onClick={() => leaveIntro('continue')}
+            className="h-12 w-full rounded-2xl text-base font-semibold shadow-[0_16px_28px_-18px_rgba(10,91,55,0.82)]"
           >
-            {isLastSlide ? 'Continue' : 'Next'}
+            Continue to Login
+            <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
           </Button>
         </div>
       ) : null}

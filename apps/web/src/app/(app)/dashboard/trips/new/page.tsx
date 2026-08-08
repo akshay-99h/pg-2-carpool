@@ -2,6 +2,12 @@ import { TripCreateForm } from '@/components/trips/trip-create-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Post a Trip',
+};
+
 export default async function NewTripPage() {
   await requireApprovedUser();
 

@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 import { TripFeed } from '@/components/trips/trip-feed';
@@ -5,6 +6,12 @@ import { TripPostedToast } from '@/components/trips/trip-posted-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Trips',
+};
 
 export default async function TripsPage({
   searchParams,
@@ -25,22 +32,17 @@ export default async function TripsPage({
           </CardContent>
         </Card>
       ) : null}
-      <Card className="auth-hero-card">
-        <CardContent className="flex items-center justify-between gap-3 p-5">
-          <div>
-            <p className="text-lg font-semibold">Book a Car Pool ride</p>
-            <p className="text-sm text-muted-foreground">
-              Uber-like booking flow for mobile with quick date and time filters.
-            </p>
-          </div>
-          <Button asChild className="hidden sm:inline-flex">
-            <Link href="/dashboard/trips/new">Post Trip</Link>
-          </Button>
-        </CardContent>
-      </Card>
-      <Button asChild className="w-full sm:hidden">
-        <Link href="/dashboard/trips/new">Post Trip</Link>
-      </Button>
+      {/* One heading row, one action. The old marketing card plus a duplicated
+          mobile-only button pushed the ride list far down the screen. */}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-heading text-xl font-semibold tracking-tight">Rides</h1>
+        <Button asChild size="sm">
+          <Link href="/dashboard/trips/new">
+            <Plus className="mr-1.5 h-4 w-4" aria-hidden />
+            Post Trip
+          </Link>
+        </Button>
+      </div>
       <TripFeed currentUserId={user.id} currentUserRole={user.role} />
     </div>
   );

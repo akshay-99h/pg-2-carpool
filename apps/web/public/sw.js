@@ -1,10 +1,14 @@
-const CACHE_NAME = 'pg2-carpool-v5';
+const CACHE_NAME = 'pg2-carpool-v6';
+
+// Only the offline fallback and brand assets are precached. `/` and `/login`
+// are deliberately NOT precached: both can respond with a redirect depending on
+// session state, and a redirected response cannot be replayed for a navigation.
 const SHELL_ASSETS = [
-  '/',
-  '/login',
+  '/offline',
   '/manifest.webmanifest',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png',
   '/branding/pg2-mark.svg',
 ];
 const STATIC_PATH_PREFIXES = ['/_next/static/', '/icons/', '/branding/'];
@@ -19,27 +23,32 @@ function isStaticAssetRequest(request, pathname) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(SHELL_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      // Individual failures must not abort the whole install.
+      Promise.all(
+        SHELL_ASSETS.map((asset) =>
+          cache.add(asset).catch(() => {
+            /* asset unavailable at install time */
+          })
+        )
+      )
+    )
   );
-  self.skipWaiting();
+
+  // NOTE: no skipWaiting() here on purpose. The new worker stays in `waiting`
+  // so the in-app update banner can ask the user before we activate and reload,
+  // instead of reloading out from under someone mid-form.
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-          return Promise.resolve();
-        })
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.map((key) => (key === CACHE_NAME ? Promise.resolve() : caches.delete(key))))
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -55,8 +64,14 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(async () => {
-        const shell = (await caches.match('/')) ?? (await caches.match('/login'));
-        return shell || Response.error();
+        // Serve the page itself if we happen to have it, otherwise a real
+        // offline screen — never the marketing landing page.
+        const cached = await caches.match(event.request);
+        if (cached) {
+          return cached;
+        }
+        const offline = await caches.match('/offline');
+        return offline || Response.error();
       })
     );
     return;
@@ -66,6 +81,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Stale-while-revalidate for immutable-ish static assets.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const networkFetch = fetch(event.request).then((response) => {
@@ -80,7 +96,7 @@ self.addEventListener('fetch', (event) => {
         return cached;
       }
 
-      return networkFetch.catch(() => caches.match('/'));
+      return networkFetch.catch(() => caches.match('/offline'));
     })
   );
 });

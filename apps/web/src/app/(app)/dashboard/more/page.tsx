@@ -1,29 +1,23 @@
 import { ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
+import { LogoutButton } from '@/components/forms/logout-button';
 import { mobileMoreNavItems } from '@/components/layout/nav-items';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { requireProfileCompletion } from '@/server/auth-guards';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'More',
+};
 
 export default async function MorePage() {
   const user = await requireProfileCompletion();
 
   return (
     <div className="space-y-3">
-      <Card className="auth-hero-card">
-        <CardHeader>
-          <CardTitle>More Options</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            Additional Car Pool tools are grouped here so mobile navigation stays fast and clean.
-          </p>
-          <Button asChild className="w-full sm:w-auto">
-            <Link href="/dashboard/trips/new">Post a New Trip</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <h1 className="font-heading text-xl font-semibold tracking-tight">More</h1>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {mobileMoreNavItems.map((item) => {
@@ -62,6 +56,11 @@ export default async function MorePage() {
             </Card>
           </Link>
         ) : null}
+      </div>
+
+      {/* Logout lives here rather than in the header of every screen. */}
+      <div className="pt-1 md:hidden">
+        <LogoutButton className="w-full justify-center" />
       </div>
     </div>
   );

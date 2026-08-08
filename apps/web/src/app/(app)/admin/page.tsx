@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/lib/db';
 import { requireAdminUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Admin Overview',
+};
+
 export default async function AdminPage() {
   await requireAdminUser();
   const now = new Date();

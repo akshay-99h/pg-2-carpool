@@ -30,10 +30,12 @@ export const userNavItems: NavItem[] = [
   { href: '/dashboard/terms', label: 'Terms and Conditions', icon: FileText },
 ];
 
+// Labels here are rendered under the icons in the bottom nav, so they are kept
+// short enough to fit a quarter of a 360px viewport without wrapping.
 export const mobilePrimaryNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/dashboard/trips', label: 'Trips', icon: CarTaxiFront },
-  { href: '/dashboard/bookings', label: 'My Bookings', icon: MapPinned },
+  { href: '/dashboard/bookings', label: 'Bookings', icon: MapPinned },
   { href: '/dashboard/more', label: 'More', icon: Grid2x2 },
 ];
 

@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { ToastProvider } from '@/components/providers/toast-provider';
 import { PwaUpdateBanner } from '@/components/pwa-update-banner';
+import { OfflineIndicator } from '@/components/pwa/offline-indicator';
 
 import './globals.css';
 
@@ -31,8 +32,13 @@ export const metadata: Metadata = {
     'Resident-first carpool platform for Panchsheel Greens II with secure approvals, trip matching, and PWA support.',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icons/icon-192.svg',
-    apple: '/icons/icon-192.svg',
+    icon: [
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    // iOS ignores the web manifest and only reads apple-touch-icon, which must
+    // be a PNG - an SVG here silently falls back to a screenshot of the page.
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: {
     capable: true,
@@ -45,7 +51,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [{ media: '(prefers-color-scheme: light)', color: '#207946' }],
+  // Required for `env(safe-area-inset-*)` to resolve to anything but 0 on
+  // notched devices - the bottom nav and PWA screens depend on it.
+  viewportFit: 'cover',
+  // Single theme colour: the app is light-only today (see `color-scheme` in
+  // globals.css). Declaring a dark variant here would promise a dark theme the
+  // stylesheet does not implement.
+  themeColor: '#206f4a',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -54,9 +66,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} bg-background font-body text-foreground antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
+        >
+          Skip to content
+        </a>
         <QueryProvider>{children}</QueryProvider>
         <ToastProvider />
         <Analytics />
+        <OfflineIndicator />
         <PwaUpdateBanner />
         <Script id="sw-register" strategy="afterInteractive">
           {`if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {})); }`}

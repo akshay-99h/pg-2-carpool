@@ -3,6 +3,12 @@ import { MarkdownContent } from '@/components/ui/markdown-content';
 import { db } from '@/lib/db';
 import { requireApprovedUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms and Conditions',
+};
+
 export default async function TermsPage() {
   await requireApprovedUser();
 

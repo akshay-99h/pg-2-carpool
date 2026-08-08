@@ -2,6 +2,12 @@ import { OnboardingForm } from '@/components/forms/onboarding-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { requireProfileCompletion } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Profile',
+};
+
 export default async function ProfilePage() {
   const user = await requireProfileCompletion();
   const approvalLabel = user.approvalStatus === 'APPROVED' ? 'APPROVED' : 'AWAITED';

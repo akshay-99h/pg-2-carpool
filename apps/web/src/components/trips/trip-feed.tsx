@@ -1,15 +1,13 @@
 'use client';
 
 import {
-  CarFront,
-  Clock3,
   LocateFixed,
   MapPinned,
   Pencil,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Trash2,
-  UsersRound,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -23,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
+import { trackEvent } from '@/lib/analytics';
 import { combineDateAndTimeToIso, toDateInputValue, toTimeInputValue } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 import { formatDateTime } from '@/lib/format';
@@ -124,6 +123,7 @@ export function TripFeed({
   const [query, setQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [fromLocation, setFromLocation] = useState('Panchsheel Greens 2');
   const [travelDate, setTravelDate] = useState('');
   const [travelTime, setTravelTime] = useState('');
@@ -181,6 +181,16 @@ export function TripFeed({
     void loadTrips(page);
   }, [loadTrips, page]);
 
+  // Only the non-default filters count, so the badge reflects what the resident
+  // actually narrowed down rather than always showing the default pickup point.
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (travelDate) count += 1;
+    if (travelTime) count += 1;
+    if (fromLocation.trim() && fromLocation.trim() !== 'Panchsheel Greens 2') count += 1;
+    return count;
+  }, [travelDate, travelTime, fromLocation]);
+
   const popularDestinations = useMemo(() => {
     const seen = new Set<string>();
     const destinations: string[] = [];
@@ -201,6 +211,7 @@ export function TripFeed({
     setLoading(true);
     try {
       await apiFetch(`/api/trips/${tripId}/request`, { method: 'POST' });
+      trackEvent({ name: 'seat_requested' });
       await loadTrips(page);
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Could not request seat');
@@ -219,6 +230,7 @@ export function TripFeed({
 
     try {
       await apiFetch(`/api/trips/${tripId}`, { method: 'DELETE' });
+      trackEvent({ name: 'trip_deleted' });
       toast.success('Trip deleted successfully.');
 
       const nextPage =
@@ -248,6 +260,7 @@ export function TripFeed({
 
     try {
       await apiFetch(`/api/trip-requests/${requestId}`, { method: 'DELETE' });
+      trackEvent({ name: 'booking_revoked', props: { by: 'passenger' } });
       toast.success('Booking revoked.');
       await loadTrips(page);
     } catch (errorValue) {
@@ -350,107 +363,139 @@ export function TripFeed({
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="surface-raised">
-        <CardContent className="space-y-4 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xl font-semibold leading-tight">Find your next car pool ride</p>
-              <p className="text-sm text-muted-foreground">
-                Search live trips, then filter by pickup, date, and departure window.
-              </p>
-            </div>
-            <Badge variant="outline" className="status-chip px-2.5 py-1">
-              Live Search
-            </Badge>
-          </div>
-
-          <div className="grid gap-2 md:grid-cols-2">
-            <div className="relative">
-              <LocateFixed className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
-              <Input
-                className="pl-9"
-                value={fromLocation}
-                onChange={(event) => {
-                  setFromLocation(event.target.value);
+    <div className="space-y-3">
+      {/* Search is one compact row. The detailed filters stay collapsed so the
+          rides themselves - the reason people open this screen - start near the
+          top instead of below a full screen of controls. */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Where do you want to go?"
+              aria-label="Search destination"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
                   setPage(1);
-                }}
-                placeholder="Pickup from"
-              />
-            </div>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                className="pl-9"
-                placeholder="Where do you want to go?"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            <DatePicker
-              value={travelDate}
-              onValueChange={(value) => {
-                setTravelDate(value);
-                setPage(1);
+                  setActiveQuery(query.trim());
+                }
               }}
-              placeholder="Travel date"
-              aria-label="Travel date"
-            />
-            <TimePicker
-              value={travelTime}
-              onValueChange={(value) => {
-                setTravelTime(value);
-                setPage(1);
-              }}
-              step={300}
-              placeholder="Travel time"
-              aria-label="Travel time"
             />
           </div>
+          <Button
+            type="button"
+            size="icon"
+            aria-label="Search rides"
+            onClick={() => {
+              setPage(1);
+              setActiveQuery(query.trim());
+            }}
+          >
+            <Search className="h-4 w-4" aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((current) => !current)}
+            className="shrink-0 px-3.5"
+          >
+            <SlidersHorizontal className="h-4 w-4" aria-hidden />
+            <span className="ml-1.5 hidden sm:inline">Filters</span>
+            {activeFilterCount > 0 ? (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[0.65rem] font-semibold text-primary-foreground">
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </Button>
+        </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => {
-                setPage(1);
-                setActiveQuery(query.trim());
-              }}
-            >
-              Find Rides
-            </Button>
-            <Button variant="outline" onClick={applyNowFilters}>
-              Leave Now
-            </Button>
-            <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
-              Clear Filters
-            </Button>
-          </div>
-
-          {popularDestinations.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {popularDestinations.map((destination) => (
-                <button
-                  key={destination}
-                  type="button"
-                  className="surface-inset rounded-full px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-white"
-                  onClick={() => {
-                    setQuery(destination);
+        {filtersOpen ? (
+          <Card>
+            <CardContent className="space-y-3 p-4">
+              <div className="relative">
+                <LocateFixed className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                <Input
+                  className="pl-9"
+                  value={fromLocation}
+                  aria-label="Pickup from"
+                  onChange={(event) => {
+                    setFromLocation(event.target.value);
                     setPage(1);
-                    setActiveQuery(destination);
                   }}
-                >
-                  {destination}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+                  placeholder="Pickup from"
+                />
+              </div>
 
-      {loading ? <p className="text-sm text-muted-foreground">Loading rides...</p> : null}
-      {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
+              <div className="grid gap-2 sm:grid-cols-2">
+                <DatePicker
+                  value={travelDate}
+                  onValueChange={(value) => {
+                    setTravelDate(value);
+                    setPage(1);
+                  }}
+                  placeholder="Travel date"
+                  aria-label="Travel date"
+                />
+                <TimePicker
+                  value={travelTime}
+                  onValueChange={(value) => {
+                    setTravelTime(value);
+                    setPage(1);
+                  }}
+                  step={300}
+                  placeholder="Travel time"
+                  aria-label="Travel time"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={applyNowFilters}>
+                  Leave Now
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-muted-foreground"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {popularDestinations.length > 0 ? (
+          // One scrollable row rather than a wrapping block that ate two lines
+          // of vertical space above the results.
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {popularDestinations.map((destination) => (
+              <button
+                key={destination}
+                type="button"
+                className="surface-inset shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-white"
+                onClick={() => {
+                  setQuery(destination);
+                  setPage(1);
+                  setActiveQuery(destination);
+                }}
+              >
+                {destination}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <output aria-live="polite" className="block">
+        {loading ? <p className="text-sm text-muted-foreground">Loading rides…</p> : null}
+        {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+      </output>
 
       {!loading && trips.length === 0 ? (
         <Card>
@@ -459,34 +504,6 @@ export function TripFeed({
             <p>Try another destination or clear your date and time filters.</p>
           </CardContent>
         </Card>
-      ) : null}
-
-      {pagination ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>
-            Page {pagination.page} of {pagination.totalPages} ({pagination.total} rides)
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-              disabled={loading || pagination.page <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setPage((previous) => Math.min(pagination.totalPages, previous + 1))}
-              disabled={loading || pagination.page >= pagination.totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
       ) : null}
 
       <div className="grid gap-3 xl:grid-cols-2">
@@ -505,26 +522,28 @@ export function TripFeed({
           return (
             <Card key={trip.id} className="overflow-hidden">
               <CardContent className="space-y-4 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant={trip.tripType === 'ONE_TIME' ? 'secondary' : 'default'}>
-                        {trip.tripType === 'ONE_TIME' ? 'One Time' : 'Daily'}
-                      </Badge>
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {trip.tripType === 'ONE_TIME'
-                          ? formatDateTime(trip.departAt)
-                          : `Repeats: ${repeatLabel} at ${new Date(trip.departAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                      Car owner: {trip.driver.profile?.name ?? 'Resident'} (
-                      {trip.driver.profile?.towerFlat ?? 'PG2'})
-                    </p>
+                {/* Badges, time and owner in two lines instead of three - the
+                    seats badge used to wrap onto a row of its own at 375px. */}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    <Badge variant={trip.tripType === 'ONE_TIME' ? 'secondary' : 'default'}>
+                      {trip.tripType === 'ONE_TIME' ? 'One Time' : 'Daily'}
+                    </Badge>
+                    <Badge variant={seatsLeft > 0 ? 'default' : 'danger'}>
+                      {seatsLeft > 0
+                        ? `${seatsLeft} seat${seatsLeft === 1 ? '' : 's'} left`
+                        : 'Full'}
+                    </Badge>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {trip.tripType === 'ONE_TIME'
+                        ? formatDateTime(trip.departAt)
+                        : `${repeatLabel} · ${new Date(trip.departAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
+                    </span>
                   </div>
-                  <Badge variant={seatsLeft > 0 ? 'default' : 'danger'} className="px-2.5 py-1">
-                    Seats left: {seatsLeft}
-                  </Badge>
+                  <p className="text-xs text-muted-foreground">
+                    {trip.driver.profile?.name ?? 'Resident'} ·{' '}
+                    {trip.driver.profile?.towerFlat ?? 'PG2'}
+                  </p>
                 </div>
 
                 <div className="surface-inset rounded-2xl p-3">
@@ -546,34 +565,22 @@ export function TripFeed({
                     </div>
                   </div>
 
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <p className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 text-xs text-muted-foreground">
-                      <MapPinned className="h-3.5 w-3.5 text-primary" />
-                      {trip.route || 'Route details shared by car owner'}
+                  {/* Only trip-specific facts are shown. "On-time pickup
+                      expected", "Resident verified" and "Shared cost commute"
+                      were identical on every card and cost ~130px each time. */}
+                  {trip.route ? (
+                    <p className="mt-3 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 text-xs text-muted-foreground">
+                      <MapPinned className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                      {trip.route}
                     </p>
-                    <p className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-white px-3 py-2 text-xs text-muted-foreground">
-                      <Clock3 className="h-3.5 w-3.5 text-primary" />
-                      On-time pickup expected
-                    </p>
-                  </div>
+                  ) : null}
 
                   {trip.notes ? (
                     <p className="mt-2 inline-flex items-start gap-2 text-xs text-muted-foreground">
-                      <Sparkles className="mt-0.5 h-3.5 w-3.5 text-primary" />
+                      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
                       Note: {trip.notes}
                     </p>
                   ) : null}
-                </div>
-
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="inline-flex min-h-10 items-center rounded-xl border border-border/70 px-3 text-xs text-muted-foreground">
-                    <UsersRound className="mr-2 h-4 w-4 text-primary" />
-                    Resident verified
-                  </div>
-                  <div className="inline-flex min-h-10 items-center rounded-xl border border-border/70 px-3 text-xs text-muted-foreground">
-                    <CarFront className="mr-2 h-4 w-4 text-primary" />
-                    Shared cost commute
-                  </div>
                 </div>
 
                 {editingTripId === trip.id && editTripDraft ? (
@@ -869,6 +876,35 @@ export function TripFeed({
           );
         })}
       </div>
+
+      {/* Pagination sits under the results, not above them. */}
+      {pagination && pagination.totalPages > 1 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
+          <p>
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total} rides)
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPage((previous) => Math.max(1, previous - 1))}
+              disabled={loading || pagination.page <= 1}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPage((previous) => Math.min(pagination.totalPages, previous + 1))}
+              disabled={loading || pagination.page >= pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
