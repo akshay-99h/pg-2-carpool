@@ -123,7 +123,7 @@ export function ContactManager() {
         <CardTitle>Contact Queries</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid gap-2 md:grid-cols-[220px_1fr_auto_auto]">
+        <div className="grid gap-2 md:grid-cols-[220px_1fr_auto_auto] [&>*]:min-w-0">
           <Select
             value={statusFilter}
             onChange={(event) => {

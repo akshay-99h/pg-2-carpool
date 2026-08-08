@@ -75,7 +75,7 @@ export default async function OnboardingPage() {
 
   return (
     <MobileShell withBottomInset={false} className="auth-aesthetic pt-6">
-      <section className="grid gap-4 md:grid-cols-[1fr_1.1fr] md:items-start">
+      <section className="grid gap-4 md:grid-cols-[1fr_1.1fr] md:items-start [&>*]:min-w-0">
         <Card className="auth-hero-card hidden md:block">
           <CardHeader>
             <CardTitle className="text-2xl">Complete resident registration</CardTitle>

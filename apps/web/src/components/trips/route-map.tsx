@@ -25,7 +25,7 @@ export function RouteMap() {
   }, [from, mode, to]);
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[340px_1fr] lg:items-start">
+    <div className="grid gap-3 lg:grid-cols-[340px_1fr] lg:items-start [&>*]:min-w-0">
       <Card className="auth-hero-card lg:sticky lg:top-6">
         <CardHeader>
           <CardTitle>Route map</CardTitle>
