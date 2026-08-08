@@ -406,7 +406,12 @@ export function PoolRequestBoard({
   };
 
   return (
-    <div className={showComposer ? 'grid gap-3 xl:grid-cols-[0.95fr_1.05fr]' : 'grid gap-3'}>
+    <div
+      className={cn(
+        '[&>*]:min-w-0',
+        showComposer ? 'grid gap-3 xl:grid-cols-[0.95fr_1.05fr]' : 'grid gap-3'
+      )}
+    >
       {showComposer ? (
         <Card className="auth-hero-card xl:sticky xl:top-6">
           <CardHeader>

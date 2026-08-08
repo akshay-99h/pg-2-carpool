@@ -283,7 +283,7 @@ export default async function AdminAnalyticsPage({
             </div>
             <Badge variant="outline">Admin Only</Badge>
           </div>
-          <form className="grid gap-2 md:grid-cols-[1fr_auto_auto]">
+          <form className="grid gap-2 md:grid-cols-[1fr_auto_auto] [&>*]:min-w-0">
             <Input name="q" defaultValue={query} placeholder="Search route or location" />
             <Button type="submit">Search</Button>
             <Button asChild variant="outline">

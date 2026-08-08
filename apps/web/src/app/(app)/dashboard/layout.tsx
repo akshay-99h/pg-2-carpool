@@ -55,7 +55,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
       <section className="grid gap-4 md:grid-cols-[280px_1fr] md:items-start">
         <DesktopNavRail userName={userName} towerFlat={towerFlat} approvalStatus={approvalStatus} />
-        <div className="space-y-4 md:space-y-5">
+        {/* min-w-0 is load-bearing: grid items default to `min-width: auto`, so
+            without it this track cannot shrink below its content's min-content
+            width and long trip destinations push the whole page sideways. */}
+        <div className="min-w-0 space-y-4 md:space-y-5">
           <div className="surface-raised hidden items-center justify-between gap-3 rounded-2xl px-4 py-3 md:flex">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">{userName}</p>
