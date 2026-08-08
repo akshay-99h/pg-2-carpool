@@ -10,6 +10,12 @@ import { db } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
 import { requireAdminUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Analytics',
+};
+
 const TRIPS_PAGE_SIZE = 20;
 
 const repeatDayLabel: Record<string, string> = {
@@ -286,7 +292,13 @@ export default async function AdminAnalyticsPage({
           </form>
           <div className="flex justify-end">
             <Button asChild variant="outline">
-              <Link href={query ? `/api/admin/trips/export?q=${encodeURIComponent(query)}` : '/api/admin/trips/export'}>
+              <Link
+                href={
+                  query
+                    ? `/api/admin/trips/export?q=${encodeURIComponent(query)}`
+                    : '/api/admin/trips/export'
+                }
+              >
                 Export Trips XLSX
               </Link>
             </Button>

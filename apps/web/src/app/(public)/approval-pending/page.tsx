@@ -9,6 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from '@/lib/auth/session';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Approval Pending',
+};
+
 export default async function ApprovalPendingPage() {
   const user = await getCurrentUser();
 

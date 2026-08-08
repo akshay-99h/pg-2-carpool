@@ -2,6 +2,12 @@ import { PoolRequestBoard } from '@/components/trips/pool-request-board';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Find Passenger',
+};
+
 export default async function FindPassengerPage() {
   const user = await requireApprovedUser();
 

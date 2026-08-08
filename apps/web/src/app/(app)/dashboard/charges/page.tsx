@@ -3,6 +3,12 @@ import { db } from '@/lib/db';
 import { formatCurrencyInr } from '@/lib/format';
 import { requireApprovedUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Shared Expenses',
+};
+
 export default async function ChargesPage() {
   await requireApprovedUser();
 

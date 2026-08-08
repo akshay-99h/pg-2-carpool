@@ -8,6 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Complete Registration',
+};
+
 export default async function OnboardingPage() {
   const user = await getCurrentUser();
 

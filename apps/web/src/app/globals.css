@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 :root {
+  /* The app ships one theme. Declaring it stops the browser from darkening
+     native form controls and scrollbars on dark-mode devices, which produced
+     dark selects sitting inside light cards. */
+  color-scheme: light;
   --font-poppins: "Inter", "Segoe UI", "SF Pro Text", sans-serif;
   --font-merriweather: "Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif;
   --background: 210 20% 98%;
@@ -18,7 +22,9 @@
   --muted: 210 24% 95%;
   --muted-foreground: 210 10% 42%;
   --border: 210 16% 86%;
-  --input: 210 16% 84%;
+  /* Form-control boundaries need 3:1 against their background (WCAG 1.4.11).
+     The old 84% lightness measured 1.46:1; 55% measures 3.44:1. */
+  --input: 210 16% 55%;
   --ring: 152 55% 28%;
   --destructive: 354 72% 52%;
   --destructive-foreground: 0 0% 100%;
@@ -113,13 +119,6 @@ body {
     border-radius: 9999px;
     background: hsl(var(--surface-raised));
     color: hsl(var(--muted-foreground));
-  }
-
-  .brand-dot {
-    height: 0.55rem;
-    width: 0.55rem;
-    border-radius: 9999px;
-    background: hsl(var(--primary));
   }
 
   .app-surface {

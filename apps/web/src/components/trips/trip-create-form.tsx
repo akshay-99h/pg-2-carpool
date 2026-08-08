@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
+import { trackEvent } from '@/lib/analytics';
 import { combineDateAndTimeToIso, toDateInputValue, toTimeInputValue } from '@/lib/date-time';
 import { apiFetch } from '@/lib/fetcher';
 import { createTripSchema } from '@/lib/schemas';
@@ -101,6 +102,10 @@ export function TripCreateForm() {
         }),
       });
 
+      trackEvent({
+        name: 'trip_posted',
+        props: { tripType, seats: Number(seatsAvailable) },
+      });
       window.location.assign('/dashboard/trips?posted=1');
     } catch (errorValue) {
       setError(errorValue instanceof Error ? errorValue.message : 'Failed to create trip');

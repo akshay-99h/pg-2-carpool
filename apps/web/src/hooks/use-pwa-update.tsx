@@ -1,71 +1,89 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+const UPDATE_POLL_MS = 60_000;
 
 export function usePwaUpdate() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return;
     }
 
-    let refreshing = false;
+    // Only a *replacement* of an existing controller means "a new version took
+    // over". On a first-ever install the controller goes from null to active,
+    // and reloading there would bounce the user for no reason.
+    const hadControllerAtLoad = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
 
-    // Detect controller change and refresh
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-
-    // Check for updates every 60 seconds
-    const checkForUpdates = async () => {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) {
-          await reg.update();
-        }
-      } catch (error) {
-        // Silently fail
+    const onControllerChange = () => {
+      if (reloading || !hadControllerAtLoad) {
+        return;
       }
+      reloading = true;
+      window.location.reload();
     };
 
-    const intervalId = setInterval(checkForUpdates, 60000);
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
-    // Listen for new service worker
-    navigator.serviceWorker.ready.then((reg) => {
-      setRegistration(reg);
+    const trackWaiting = (registration: ServiceWorkerRegistration) => {
+      registrationRef.current = registration;
 
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
+      // A worker may already be waiting from a previous visit.
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        setUpdateAvailable(true);
+      }
 
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker available
-              setUpdateAvailable(true);
-            }
-          });
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) {
+          return;
         }
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            setUpdateAvailable(true);
+          }
+        });
       });
-    });
+    };
+
+    void navigator.serviceWorker.ready.then(trackWaiting);
+
+    const intervalId = window.setInterval(() => {
+      void registrationRef.current?.update().catch(() => {
+        /* offline or update check failed; retried on the next tick */
+      });
+    }, UPDATE_POLL_MS);
 
     return () => {
-      clearInterval(intervalId);
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      window.clearInterval(intervalId);
     };
   }, []);
 
-  const updateApp = () => {
-    if (!registration?.waiting) return;
+  const updateApp = useCallback(() => {
+    const waiting = registrationRef.current?.waiting;
+    if (!waiting) {
+      // Nothing is waiting anymore (another tab may have activated it).
+      window.location.reload();
+      return;
+    }
 
-    // Tell the waiting service worker to activate
-    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-  };
+    setUpdating(true);
+    waiting.postMessage({ type: 'SKIP_WAITING' });
+  }, []);
+
+  const dismissUpdate = useCallback(() => setUpdateAvailable(false), []);
 
   return {
     updateAvailable,
+    updating,
     updateApp,
+    dismissUpdate,
   };
 }

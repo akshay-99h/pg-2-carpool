@@ -2,6 +2,12 @@ import { RouteMap } from '@/components/trips/route-map';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireApprovedUser } from '@/server/auth-guards';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Route Map',
+};
+
 export default async function MapPage() {
   await requireApprovedUser();
 
